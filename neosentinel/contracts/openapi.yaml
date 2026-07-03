@@ -1,0 +1,435 @@
+openapi: 3.1.0
+info:
+  title: NeoSentinel Dashboard API
+  version: 1.0.0
+  description: |
+    Frozen contract for the NeoSentinel control plane dashboard.
+    REST endpoints and WebSocket event schema for Weeks 1-6 mock integration
+    and Week 7 live Redis wiring.
+
+servers:
+  - url: http://localhost:8080
+    description: Local dashboard server (node-001)
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Dashboard liveness probe
+      tags: [system]
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/v1/cluster:
+    get:
+      operationId: getClusterStatus
+      summary: Current cluster snapshot
+      tags: [cluster]
+      responses:
+        "200":
+          description: Latest telemetry snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetrySnapshot"
+
+  /api/v1/cluster/nodes/{nodeId}:
+    get:
+      operationId: getNodeStatus
+      summary: Single node metrics
+      tags: [cluster]
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^node-\\d{3}$"
+      responses:
+        "200":
+          description: Node snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NodeSnapshot"
+        "404":
+          description: Node not found
+
+  /api/v1/decisions:
+    get:
+      operationId: listDecisions
+      summary: Recent agent decisions
+      tags: [agent]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+      responses:
+        "200":
+          description: Decision history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decisions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SentinelDecision"
+
+  /api/v1/healing:
+    get:
+      operationId: listHealingEvents
+      summary: Recent healing actions
+      tags: [healing]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+      responses:
+        "200":
+          description: Healing event history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/HealingEvent"
+
+  /api/v1/audit:
+    get:
+      operationId: listAuditEntries
+      summary: GitOps audit log
+      tags: [audit]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+      responses:
+        "200":
+          description: Audit entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AuditEvent"
+
+  /ws:
+    get:
+      operationId: websocketConnect
+      summary: Live dashboard event stream
+      description: |
+        WebSocket upgrade endpoint. Server pushes contract-valid events:
+        metrics, agent_thought, healing, audit, flame_graph.
+      tags: [websocket]
+      responses:
+        "101":
+          description: Switching Protocols
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, version]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        version:
+          type: string
+        uptime_seconds:
+          type: number
+
+    HotspotEntry:
+      type: object
+      required: [symbol, samples_pct]
+      properties:
+        symbol:
+          type: string
+        samples_pct:
+          type: number
+          minimum: 0
+          maximum: 100
+        module:
+          type: string
+
+    BaselineMetrics:
+      type: object
+      required:
+        - ttft_p99_ms
+        - tokens_per_sec
+        - sve2_utilization_pct
+        - dram_bandwidth_pct
+        - cache_miss_rate_pct
+        - kv_eviction_rate
+        - requests_per_min
+      properties:
+        ttft_p99_ms:
+          type: number
+          minimum: 0
+        tokens_per_sec:
+          type: number
+          minimum: 0
+        sve2_utilization_pct:
+          type: number
+          minimum: 0
+          maximum: 100
+        dram_bandwidth_pct:
+          type: number
+          minimum: 0
+          maximum: 100
+        cache_miss_rate_pct:
+          type: number
+          minimum: 0
+          maximum: 100
+        kv_eviction_rate:
+          type: number
+          minimum: 0
+        requests_per_min:
+          type: number
+          minimum: 0
+
+    NodeSnapshot:
+      type: object
+      required:
+        - node_id
+        - status
+        - timestamp
+        - ttft_p99_ms
+        - tokens_per_sec
+        - sve2_utilization_pct
+        - dram_bandwidth_pct
+        - cache_miss_rate_pct
+        - kv_eviction_rate
+        - requests_per_min
+      properties:
+        node_id:
+          type: string
+          pattern: "^node-\\d{3}$"
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy, unknown]
+        timestamp:
+          type: string
+          format: date-time
+        ttft_p99_ms:
+          type: number
+        tokens_per_sec:
+          type: number
+        sve2_utilization_pct:
+          type: number
+        dram_bandwidth_pct:
+          type: number
+        cache_miss_rate_pct:
+          type: number
+        kv_eviction_rate:
+          type: number
+        requests_per_min:
+          type: number
+        hotspots:
+          type: array
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/HotspotEntry"
+
+    TelemetrySnapshot:
+      type: object
+      required: [cluster_id, timestamp, nodes]
+      properties:
+        cluster_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        nodes:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items:
+            $ref: "#/components/schemas/NodeSnapshot"
+        baseline:
+          $ref: "#/components/schemas/BaselineMetrics"
+
+    ActionType:
+      type: string
+      enum:
+        - noop
+        - arm_performix_analyze
+        - adjust_vllm_config
+        - scale_worker_threads
+        - trigger_requantize
+        - send_alert
+        - rollback_optimization
+
+    SentinelDecision:
+      type: object
+      required:
+        - decision_id
+        - cluster_id
+        - node_id
+        - timestamp
+        - action
+        - confidence
+        - reasoning
+      properties:
+        decision_id:
+          type: string
+        cluster_id:
+          type: string
+        node_id:
+          type: string
+          pattern: "^node-\\d{3}$"
+        timestamp:
+          type: string
+          format: date-time
+        action:
+          $ref: "#/components/schemas/ActionType"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        reasoning:
+          type: string
+        parameters:
+          type: object
+          additionalProperties: true
+        snapshot_hash:
+          type: string
+        quorum_required:
+          type: boolean
+
+    HealingEvent:
+      type: object
+      required:
+        - type
+        - timestamp
+        - healing_id
+        - node_id
+        - action
+        - status
+        - before
+        - after
+        - duration_ms
+      properties:
+        type:
+          type: string
+          const: healing
+        timestamp:
+          type: string
+          format: date-time
+        healing_id:
+          type: string
+        node_id:
+          type: string
+        action:
+          $ref: "#/components/schemas/ActionType"
+        status:
+          type: string
+          enum: [success, failed, rolled_back]
+        before:
+          $ref: "#/components/schemas/BaselineMetrics"
+        after:
+          $ref: "#/components/schemas/BaselineMetrics"
+        duration_ms:
+          type: integer
+
+    AuditEvent:
+      type: object
+      required:
+        - type
+        - timestamp
+        - commit_sha
+        - message
+        - node_id
+        - action
+        - checkpoint_id
+      properties:
+        type:
+          type: string
+          const: audit
+        timestamp:
+          type: string
+          format: date-time
+        commit_sha:
+          type: string
+        message:
+          type: string
+        node_id:
+          type: string
+        action:
+          $ref: "#/components/schemas/ActionType"
+        checkpoint_id:
+          type: string
+
+    WebSocketEvent:
+      oneOf:
+        - type: object
+          required: [type, timestamp, cluster_id, nodes]
+          properties:
+            type:
+              const: metrics
+            timestamp:
+              type: string
+              format: date-time
+            cluster_id:
+              type: string
+            nodes:
+              type: array
+              items:
+                type: object
+        - type: object
+          required: [type, timestamp, decision_id, node_id, chunk]
+          properties:
+            type:
+              const: agent_thought
+            timestamp:
+              type: string
+              format: date-time
+            decision_id:
+              type: string
+            node_id:
+              type: string
+            chunk:
+              type: string
+            done:
+              type: boolean
+        - $ref: "#/components/schemas/HealingEvent"
+        - $ref: "#/components/schemas/AuditEvent"
+        - type: object
+          required: [type, timestamp, node_id, hotspots]
+          properties:
+            type:
+              const: flame_graph
+            timestamp:
+              type: string
+              format: date-time
+            node_id:
+              type: string
+            hotspots:
+              type: array
+              maxItems: 5
+              items:
+                $ref: "#/components/schemas/HotspotEntry"
+      discriminator:
+        propertyName: type
