@@ -12,6 +12,9 @@ HEALTH_CHECK_SCRIPT = (
 )
 
 
+BASE_URL = "http://127.0.0.1"
+
+
 class TestVllmDocumentation:
     def test_kleidiai_documented(self):
         readme = Path(__file__).resolve().parents[2] / "docker" / "vllm" / "README.md"
@@ -25,7 +28,7 @@ class TestVllmDocumentation:
 class TestVllmEndpoint:
     def test_completion_via_traefik(self, compose_stack):
         req = urllib.request.Request(
-            "http://localhost/v1/completions",
+            f"{BASE_URL}/v1/completions",
             data=json.dumps({"prompt": "hello", "max_tokens": 8}).encode(),
             headers={"Content-Type": "application/json"},
             method="POST",
@@ -38,7 +41,7 @@ class TestVllmEndpoint:
             assert "text" in body["choices"][0]
 
     def test_metrics_scrape_via_traefik(self, compose_stack):
-        with urllib.request.urlopen("http://localhost/metrics", timeout=10) as resp:
+        with urllib.request.urlopen(f"{BASE_URL}/metrics", timeout=10) as resp:
             text = resp.read().decode()
             assert "vllm_ttft_p99_ms" in text
             assert "vllm_tokens_per_sec" in text

@@ -16,6 +16,9 @@ REQUIRED_SERVICES = {
 }
 
 
+BASE_URL = "http://127.0.0.1"
+
+
 @requires_docker
 class TestComposeHealth:
     def test_compose_file_defines_required_services(self):
@@ -24,7 +27,7 @@ class TestComposeHealth:
         assert REQUIRED_SERVICES <= services
 
     def test_traefik_health_returns_200(self, compose_stack):
-        with urllib.request.urlopen("http://localhost/health", timeout=10) as resp:
+        with urllib.request.urlopen(f"{BASE_URL}/health", timeout=10) as resp:
             assert resp.status == 200
             body = json.loads(resp.read())
             assert body["status"] == "ok"
@@ -42,7 +45,7 @@ class TestComposeHealth:
     def test_all_vllm_workers_healthy(self, compose_stack):
         seen_nodes: set[str] = set()
         for _ in range(6):
-            with urllib.request.urlopen("http://localhost/health", timeout=10) as resp:
+            with urllib.request.urlopen(f"{BASE_URL}/health", timeout=10) as resp:
                 body = json.loads(resp.read())
                 assert body["status"] == "ok"
                 seen_nodes.add(body["node_id"])

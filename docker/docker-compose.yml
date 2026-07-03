@@ -2,6 +2,13 @@ services:
   traefik:
     image: traefik:v3.3
     container_name: neosentinel-traefik
+    depends_on:
+      vllm-worker-1:
+        condition: service_healthy
+      vllm-worker-2:
+        condition: service_healthy
+      vllm-worker-3:
+        condition: service_healthy
     ports:
       - "80:80"
       - "8081:8081"
