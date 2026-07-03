@@ -14,6 +14,18 @@ pytest
 ruff check .
 ```
 
+## Docker Stack (Week 1)
+
+Start the 3-node vLLM + Traefik + Redis + Ray stack locally:
+
+```bash
+cd docker
+docker compose up -d --build
+curl http://localhost/health
+```
+
+See [docker/vllm/README.md](docker/vllm/README.md) for KleidiAI production build flags.
+
 ## Contracts
 
 Shared boundary between the data/intelligence plane (Sahil) and control/experience plane (Divyansh). Do not modify without both owners signing off.

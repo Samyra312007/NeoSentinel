@@ -1,0 +1,47 @@
+http:
+  routers:
+    vllm-completions:
+      rule: PathPrefix(`/v1/completions`)
+      entryPoints:
+        - web
+      service: vllm-lb
+      middlewares:
+        - rate-limit
+        - circuit-breaker
+    vllm-metrics:
+      rule: PathPrefix(`/metrics`)
+      entryPoints:
+        - web
+      service: vllm-lb
+    vllm-health:
+      rule: Path(`/health`)
+      entryPoints:
+        - web
+      service: vllm-lb
+    traefik-health:
+      rule: Path(`/ping`)
+      entryPoints:
+        - web
+      service: api@internal
+
+  services:
+    vllm-lb:
+      loadBalancer:
+        healthCheck:
+          path: /health
+          interval: 10s
+          timeout: 3s
+        servers:
+          - url: http://vllm-worker-1:8000
+          - url: http://vllm-worker-2:8000
+          - url: http://vllm-worker-3:8000
+
+  middlewares:
+    rate-limit:
+      rateLimit:
+        average: 17
+        burst: 50
+        period: 1s
+    circuit-breaker:
+      circuitBreaker:
+        expression: NetworkErrorRatio() > 0.50

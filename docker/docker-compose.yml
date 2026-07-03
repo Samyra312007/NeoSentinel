@@ -1,0 +1,103 @@
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: neosentinel-traefik
+    ports:
+      - "80:80"
+      - "8081:8081"
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - neosentinel
+
+  vllm-worker-1:
+    build:
+      context: ./vllm
+      dockerfile: Dockerfile.mock
+    container_name: neosentinel-vllm-1
+    environment:
+      NODE_ID: node-001
+      PORT: "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - neosentinel
+
+  vllm-worker-2:
+    build:
+      context: ./vllm
+      dockerfile: Dockerfile.mock
+    container_name: neosentinel-vllm-2
+    environment:
+      NODE_ID: node-002
+      PORT: "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - neosentinel
+
+  vllm-worker-3:
+    build:
+      context: ./vllm
+      dockerfile: Dockerfile.mock
+    container_name: neosentinel-vllm-3
+    environment:
+      NODE_ID: node-003
+      PORT: "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - neosentinel
+
+  redis:
+    image: redis:7-alpine
+    container_name: neosentinel-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - neosentinel
+
+  ray-head:
+    image: rayproject/ray:2.44.1-py312
+    container_name: neosentinel-ray
+    ports:
+      - "8265:8265"
+      - "10001:10001"
+    volumes:
+      - ./ray/ray-head.sh:/ray-head.sh:ro
+    entrypoint: ["/bin/sh", "/ray-head.sh"]
+    healthcheck:
+      test: ["CMD", "ray", "status"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - neosentinel
+
+networks:
+  neosentinel:
+    driver: bridge
