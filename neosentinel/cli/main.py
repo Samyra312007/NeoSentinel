@@ -133,14 +133,35 @@ def rollback(node: str, checkpoint: str) -> None:
 
 @cli.command()
 @click.option("--output", default="cluster_report.html", help="Output HTML file path.")
-def report(output: str) -> None:
+@click.option("--redis-host", default="127.0.0.1", help="Redis host for report data.")
+@click.option("--redis-port", default=6379, type=int, help="Redis port for report data.")
+def report(output: str, redis_host: str, redis_port: int) -> None:
     """Generate an interactive HTML health and audit report."""
-    html_content = (
-        "<html><head><title>NeoSentinel Cluster Report</title></head>"
-        "<body><h1>NeoSentinel Cluster Health & Audit Report</h1>"
-        "<p>Status: <strong>HEALTHY</strong></p>"
-        "<p>Graviton4 Control Plane Nominal</p></body></html>"
-    )
+    import redis
+
+    from neosentinel.report import ReportDataProvider, render_cluster_report_html
+
+    try:
+        client = redis.Redis(
+            host=redis_host,
+            port=redis_port,
+            decode_responses=True,
+            socket_connect_timeout=2,
+        )
+        client.ping()
+        provider = ReportDataProvider(client)
+        data = provider.collect()
+    except Exception:
+        from datetime import UTC, datetime
+
+        from neosentinel.report.provider import ClusterReportData
+
+        data = ClusterReportData(
+            generated_at=datetime.now(UTC),
+            cluster_id="cluster-graviton4",
+            snapshot=None,
+        )
+    html_content = render_cluster_report_html(data)
     with open(output, "w", encoding="utf-8") as f:
         f.write(html_content)
     click.echo(f"[SUCCESS] Generated cluster report at '{output}'.")

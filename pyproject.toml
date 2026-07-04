@@ -40,6 +40,11 @@ packages = ["neosentinel"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "slow: long-running benchmarks and synthetic audits",
+    "load: Redis stream throughput benchmarks",
+    "hardware: requires Graviton4 hardware and NEOSENTINEL_HARDWARE=1",
+]
 
 [tool.ruff]
 target-version = "py312"

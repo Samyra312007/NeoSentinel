@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import redis
 from redis.cluster import RedisCluster
 
-from neosentinel.actions.base import ActionResult
 from neosentinel.contracts.decision import SentinelDecision
 from neosentinel.contracts.streams import (
     ALL_STREAMS,
@@ -19,6 +18,9 @@ from neosentinel.contracts.streams import (
 )
 from neosentinel.telemetry.performix import PmuFrame
 from neosentinel.telemetry.vllm_scraper import VllmMetricsFrame
+
+if TYPE_CHECKING:
+    from neosentinel.actions.base import ActionResult
 
 RedisClient = redis.Redis | RedisCluster
 

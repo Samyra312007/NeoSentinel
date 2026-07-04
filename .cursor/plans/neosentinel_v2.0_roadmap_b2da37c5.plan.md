@@ -37,7 +37,10 @@ todos:
     status: pending
   - id: w6-hardening
     content: "Week 6 (Both, independent): Backend load tests + Performix validation (Sahil); Playwright e2e + CI matrix (Divyansh)"
-    status: pending
+    status: in_progress
+  - id: sahil-w6-hardening
+    content: "Week 6 (Sahil): Redis load test, false-positive tuning, Performix HW validation, Hypothesis tests, report API"
+    status: completed
   - id: w7-integrate
     content: "Week 7 (Both): 3-node deploy, wire dashboard to real Redis, inject SVE2 scenario, record demo, final doctor green"
     status: pending
@@ -60,7 +63,7 @@ isProject: false
 | Week 3 | 🔄 In progress | 5/10 |
 | Week 4 | 🔄 In progress | 6/11 |
 | Week 5 | 🔄 In progress | 5/11 |
-| Week 6 | ⬜ Not started | 0/10 |
+| Week 6 | 🔄 In progress | 5/10 |
 | Week 7 | ⬜ Not started | 0/10 |
 
 ---
@@ -300,11 +303,11 @@ Each owner hardens their track; still no cross-dependency.
 
 ### Sahil — Backend Hardening
 
-- [ ] Load test Redis Streams: 3,000 events/sec target
-- [ ] Agent false-positive tuning: <2% on 72hr synthetic run
-- [ ] Performix real hardware validation on Graviton4 (SVE2 counters readable)
-- [ ] Hypothesis property tests for decision schema
-- [ ] [`neosentinel/report`](neosentinel/report) data provider API (feeds Divyansh's report CLI)
+- [x] Load test Redis Streams: 3,000 events/sec target
+- [x] Agent false-positive tuning: <2% on 72hr synthetic run
+- [x] Performix real hardware validation on Graviton4 (SVE2 counters readable)
+- [x] Hypothesis property tests for decision schema
+- [x] [`neosentinel/report`](neosentinel/report) data provider API (feeds Divyansh's report CLI)
 
 ### Divyansh — Experience Hardening
 

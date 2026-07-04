@@ -14,6 +14,12 @@ CACHE_MISS_HIGH_THRESHOLD = 40.0
 SVE2_CRITICAL_THRESHOLD = 20.0
 TTFT_CRITICAL_THRESHOLD = 500.0
 
+HEALTHY_SVE2_MIN = 55.0
+HEALTHY_TTFT_MAX = 220.0
+HEALTHY_DRAM_MAX = 78.0
+HEALTHY_KV_MAX = 2.5
+HEALTHY_CACHE_MISS_MAX = 35.0
+
 
 @dataclass(frozen=True)
 class DecisionCandidate:
@@ -23,6 +29,16 @@ class DecisionCandidate:
     reasoning: str
     parameters: dict[str, object]
     quorum_required: bool = False
+
+
+def is_clearly_healthy(node: NodeSnapshot) -> bool:
+    return (
+        node.sve2_utilization_pct >= HEALTHY_SVE2_MIN
+        and node.ttft_p99_ms <= HEALTHY_TTFT_MAX
+        and node.dram_bandwidth_pct <= HEALTHY_DRAM_MAX
+        and node.kv_eviction_rate <= HEALTHY_KV_MAX
+        and node.cache_miss_rate_pct <= HEALTHY_CACHE_MISS_MAX
+    )
 
 
 def derive_node_status(node: NodeSnapshot) -> NodeStatus:
@@ -42,6 +58,15 @@ def derive_node_status(node: NodeSnapshot) -> NodeStatus:
 
 
 def evaluate_node(node: NodeSnapshot) -> DecisionCandidate:
+    if is_clearly_healthy(node):
+        return DecisionCandidate(
+            node_id=node.node_id,
+            action=ActionType.NOOP,
+            confidence=0.99,
+            reasoning="All metrics within baseline thresholds.",
+            parameters={},
+        )
+
     if (
         node.sve2_utilization_pct < SVE2_LOW_THRESHOLD
         and node.ttft_p99_ms > TTFT_HIGH_THRESHOLD

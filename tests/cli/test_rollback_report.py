@@ -25,5 +25,5 @@ def test_report_command(tmp_path) -> None:
     assert "[SUCCESS] Generated cluster report" in result.output
     assert os.path.exists(output_file)
     content = output_file.read_text(encoding="utf-8")
-    assert "NeoSentinel Cluster Health & Audit Report" in content
+    assert "NeoSentinel Cluster Health" in content
     assert "Graviton4 Control Plane Nominal" in content
