@@ -1,93 +1,165 @@
+import { useEffect, useMemo, useState } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
-import type { WebSocketEvent } from './types/telemetry';
-
-function getBadgeStyle(type?: string) {
-  switch (type) {
-    case 'metrics':
-      return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-    case 'agent_thought':
-      return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
-    case 'flame_graph':
-      return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-    case 'healing':
-      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-    case 'audit':
-      return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
-    default:
-      return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-  }
-}
+import { useTheme } from './hooks/useTheme';
+import { ThemeToggle } from './components/ThemeToggle';
+import { StatCard } from './components/StatCard';
+import { NodeCard } from './components/NodeCard';
+import { EventStream } from './components/EventStream';
+import {
+  average,
+  formatNumber,
+  latestMetrics,
+} from './lib/telemetry';
 
 function App() {
+  const { theme, toggleTheme } = useTheme();
   const { connected, error, messages } = useWebSocket('ws://localhost:8080/ws');
 
+  // A slow tick so relative timestamps stay fresh without re-rendering per event.
+  const [now, setNow] = useState<number>(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const metrics = useMemo(() => latestMetrics(messages), [messages]);
+
+  const summary = useMemo(() => {
+    const nodes = metrics?.nodes ?? [];
+    const healthy = nodes.filter((n) => n.status === 'healthy').length;
+    return {
+      total: nodes.length,
+      healthy,
+      degraded: nodes.filter((n) => n.status !== 'healthy').length,
+      avgTtft: average(nodes.map((n) => n.ttft_p99_ms)),
+      avgTokens: average(nodes.map((n) => n.tokens_per_sec)),
+      avgSve2: average(nodes.map((n) => n.sve2_utilization_pct)),
+    };
+  }, [metrics]);
+
+  const nodes = metrics?.nodes ?? [];
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-          <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-            NeoSentinel v2.0
-          </h1>
-          <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700 font-mono">
-            Graviton4 Control Plane
-          </span>
-        </div>
-        <div className="flex items-center space-x-4 text-sm font-mono">
-          <div className="flex items-center space-x-2">
-            <span className="text-slate-400">WebSocket:</span>
-            <span className={`px-2 py-0.5 rounded text-xs ${connected ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-              {connected ? 'CONNECTED' : 'DISCONNECTED'}
+    <div className="min-h-screen bg-bg font-sans text-content">
+      <header className="sticky top-0 z-10 border-b border-line bg-surface/80 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
+            </span>
+            <h1 className="text-lg font-bold tracking-tight text-content">NeoSentinel v2.0</h1>
+            <span className="hidden rounded-md border border-line bg-surface-2/60 px-2 py-0.5 font-mono text-xs text-muted sm:inline">
+              Graviton4 Control Plane
             </span>
           </div>
-          {error && <span className="text-xs text-red-400">{error}</span>}
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="hidden text-muted sm:inline">WebSocket</span>
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+                  connected
+                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                    : 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300'
+                }`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                {connected ? 'CONNECTED' : 'DISCONNECTED'}
+              </span>
+            </div>
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="col-span-3 bg-slate-900/40 border border-slate-800 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-2">Cluster Overview</h2>
-          <p className="text-slate-400 text-sm">
-            Autonomous cluster healing active. <span className="text-emerald-400 font-mono font-bold">{messages.length}</span> telemetry events received.
-          </p>
-        </div>
-
-        {messages.length > 0 && (
-          <div className="col-span-3 bg-slate-900/40 border border-slate-800 rounded-lg p-6">
-            <h3 className="text-md font-semibold mb-4 flex items-center justify-between">
-              <span>Live Telemetry &amp; Decision Stream</span>
-              <span className="text-xs text-slate-400 font-mono">Real-time Feed</span>
-            </h3>
-            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 font-mono text-sm">
-              {[...messages].reverse().map((msg: WebSocketEvent, idx: number) => {
-                const type = 'type' in msg ? msg.type : 'unknown';
-                const source = ('node_id' in msg && msg.node_id) ? msg.node_id : (('cluster_id' in msg && msg.cluster_id) ? msg.cluster_id : 'system');
-                const content = ('chunk' in msg && msg.chunk) ? msg.chunk : (('message' in msg && msg.message) ? msg.message : (('action' in msg && msg.action) ? `Action: ${msg.action} (${('status' in msg && msg.status) || ''})` : JSON.stringify(msg).slice(0, 80)));
-                const ts = ('timestamp' in msg && msg.timestamp) ? msg.timestamp : 'just now';
-
-                return (
-                  <div key={idx} className="p-3 rounded bg-slate-950/60 border border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-2">
-                    <div className="flex items-center space-x-3">
-                      <span className={`px-2 py-0.5 rounded border text-xs uppercase font-bold ${getBadgeStyle(type)}`}>
-                        {type}
-                      </span>
-                      <span className="text-slate-300">
-                        {source}
-                      </span>
-                    </div>
-                    <div className="text-slate-400 text-xs truncate max-w-xl">
-                      {content}
-                    </div>
-                    <div className="text-slate-500 text-xs">
-                      {ts}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+      <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
+        {error && (
+          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-700 dark:text-red-300">
+            {error} — retrying connection to the control plane.
           </div>
         )}
+
+        <section aria-labelledby="overview-heading">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 id="overview-heading" className="text-base font-semibold text-content">
+              Cluster Overview
+            </h2>
+            <p className="text-xs text-muted">
+              Autonomous healing active ·{' '}
+              <span className="tnum font-semibold text-brand">{messages.length}</span> events received
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+            <StatCard
+              label="Nodes"
+              value={summary.total}
+              hint={`${summary.healthy} healthy · ${summary.degraded} attention`}
+              accent="bg-brand"
+            />
+            <StatCard
+              label="Healthy"
+              value={summary.total > 0 ? summary.healthy : '—'}
+              unit={summary.total > 0 ? `/ ${summary.total}` : undefined}
+              accent="bg-emerald-500"
+            />
+            <StatCard
+              label="Avg TTFT p99"
+              value={summary.total > 0 ? formatNumber(summary.avgTtft, 0) : '—'}
+              unit="ms"
+              accent="bg-sky-500"
+            />
+            <StatCard
+              label="Avg Throughput"
+              value={summary.total > 0 ? formatNumber(summary.avgTokens, 1) : '—'}
+              unit="tok/s"
+              accent="bg-violet-500"
+            />
+            <StatCard
+              label="Avg SVE2"
+              value={summary.total > 0 ? formatNumber(summary.avgSve2, 0) : '—'}
+              unit="%"
+              accent="bg-cyan-500"
+            />
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <section aria-labelledby="nodes-heading" className="lg:col-span-2">
+            <h2 id="nodes-heading" className="mb-3 text-base font-semibold text-content">
+              Nodes
+            </h2>
+            {nodes.length > 0 ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {nodes.map((node) => (
+                  <NodeCard key={node.node_id} node={node} now={now} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-line bg-surface/50 text-sm text-muted">
+                No node snapshots yet — awaiting first metrics event.
+              </div>
+            )}
+          </section>
+
+          <section aria-labelledby="stream-heading" className="lg:col-span-1">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 id="stream-heading" className="text-base font-semibold text-content">
+                Decision Stream
+              </h2>
+              <span className="font-mono text-xs text-subtle">real-time</span>
+            </div>
+            <div className="rounded-xl border border-line bg-surface p-3 shadow-card">
+              <EventStream events={messages} now={now} />
+            </div>
+          </section>
+        </div>
       </main>
+
+      <footer className="mx-auto max-w-7xl px-4 py-6 text-center text-xs text-subtle sm:px-6">
+        NeoSentinel · Graviton4 autonomous inference control plane
+      </footer>
     </div>
   );
 }
