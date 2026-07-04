@@ -6,7 +6,7 @@ NeoSentinel is a distributed, agentic reliability framework engineered to monito
 
 ---
 
-## ⚡ Key Performance Metrics
+##  Key Performance Metrics
 
 | Metric | Degraded / Throttled State | Autonomous Healed State | Improvement |
 | :--- | :--- | :--- | :--- |
@@ -17,7 +17,7 @@ NeoSentinel is a distributed, agentic reliability framework engineered to monito
 
 ---
 
-## 🚀 Project Roadmap & Status (Weeks 0–6 Complete)
+##  Project Roadmap & Status (Weeks 0–6 Complete)
 
 NeoSentinel is developed across two parallel engineering tracks: the **Data/Intelligence Plane** (Sahil) and the **Control/Experience Plane** (Divyansh), unified by frozen Pydantic contracts.
 
@@ -70,7 +70,7 @@ neosentinel replay --stream thermal_throttling --speed 10
 
 ---
 
-## 🖥️ Dashboard UI (React + Vite)
+##  Dashboard UI (React + Vite)
 
 Launch the interactive web visualizer to monitor cluster telemetry, live agent thoughts, and quorum voting:
 
@@ -97,7 +97,7 @@ See [docker/vllm/README.md](docker/vllm/README.md) for specialized KleidiAI INT4
 
 ---
 
-## 🛠️ Development & Testing
+##  Development & Testing
 
 NeoSentinel enforces strict quality gates: zero merges without passing tests and comprehensive validation.
 
