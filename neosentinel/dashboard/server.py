@@ -21,25 +21,16 @@ async def health_check() -> dict[str, str]:
     return {"status": "healthy", "service": "dashboard"}
 
 
+from neosentinel.dashboard.broadcaster import TelemetryBroadcaster
+
+broadcaster = TelemetryBroadcaster(use_redis=False)
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:
     """Live dashboard WebSocket event stream stub."""
-    await websocket.accept()
-    from neosentinel.dashboard.mock_feed import MockTelemetryFeed
-
-    feed = MockTelemetryFeed()
-
-    async def stream_loop() -> None:
-        try:
-            await asyncio.sleep(0.5)
-            while True:
-                async for event in feed.stream_events("sve2_underutilization", delay_sec=1.5):
-                    await websocket.send_json(event)
-                await asyncio.sleep(3.0)
-        except Exception:
-            pass
-
-    stream_task = asyncio.create_task(stream_loop())
+    await broadcaster.connect(websocket)
+    await broadcaster.start_streaming("sve2_underutilization", delay_sec=1.5)
     try:
         while True:
             # Wait for client message or ping
@@ -51,4 +42,4 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
     except WebSocketDisconnect:
         pass
     finally:
-        stream_task.cancel()
+        broadcaster.disconnect(websocket)
