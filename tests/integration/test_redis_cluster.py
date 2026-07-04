@@ -65,9 +65,7 @@ class TestRedisCluster:
         assert len(masters) == 3
         assert len(replicas) == 3
         for master in masters:
-            master_replicas = [
-                node for node in replicas if node["master_id"] == master["id"]
-            ]
+            master_replicas = [node for node in replicas if node["master_id"] == master["id"]]
             assert len(master_replicas) == 1
 
     def test_stream_write_across_cluster(self, compose_stack):
@@ -92,9 +90,7 @@ class TestRedisCluster:
     def test_failover_replica_promoted(self, compose_stack):
         nodes_before = _parse_cluster_nodes(_cluster_nodes())
         target_master = next(node for node in nodes_before if "myself,master" in node["flags"])
-        replica = next(
-            node for node in nodes_before if node["master_id"] == target_master["id"]
-        )
+        replica = next(node for node in nodes_before if node["master_id"] == target_master["id"])
 
         container = "neosentinel-redis-node-1"
         subprocess.run(

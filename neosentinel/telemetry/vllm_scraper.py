@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from neosentinel.contracts.streams import VLLM_STREAM_FIELDS
 
 _METRIC_RE = re.compile(
-    r'^vllm_(ttft_p99_ms|tokens_per_sec|kv_eviction_rate|requests_per_min)'
+    r"^vllm_(ttft_p99_ms|tokens_per_sec|kv_eviction_rate|requests_per_min)"
     r'\{node="([^"]+)"\}\s+([\d.eE+-]+)\s*$'
 )
 
