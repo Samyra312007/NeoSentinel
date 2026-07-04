@@ -50,3 +50,9 @@ jobs:
 
       - name: Verify CLI command simulation readiness
         run: neosentinel --help
+
+      - name: Install Playwright Browsers and Run E2E UI Tests
+        run: |
+          cd dashboard-ui
+          npx playwright install --with-deps chromium
+          npm run test:e2e

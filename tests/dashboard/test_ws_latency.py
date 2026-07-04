@@ -47,3 +47,40 @@ async def test_websocket_broadcast_latency_under_50ms() -> None:
         assert client_latency_ms < 50.0, (
             f"Client {idx} delivery latency exceeded 50ms: {client_latency_ms:.2f}ms"
         )
+
+
+@pytest.mark.asyncio
+async def test_websocket_high_concurrency_stress_benchmark() -> None:
+    """Benchmark test verifying <50ms broadcast latency under high load (100 concurrent clients)."""
+    broadcaster = TelemetryBroadcaster()
+    num_clients = 100
+
+    received_count = 0
+
+    async def mock_send_json(data: dict) -> None:
+        nonlocal received_count
+        received_count += 1
+
+    for _ in range(num_clients):
+        ws = MagicMock(spec=WebSocket)
+        ws.send_json = AsyncMock(side_effect=mock_send_json)
+        broadcaster.active_connections.add(ws)
+
+    event_payload = {
+        "type": "metrics",
+        "timestamp": "2026-07-04T12:00:00Z",
+        "cluster_id": "cluster-graviton4-stress",
+        "nodes": [{"node_id": f"node-{i}", "status": "nominal"} for i in range(10)],
+    }
+
+    start_time = time.perf_counter()
+    count = await broadcaster.broadcast(event_payload)
+    end_time = time.perf_counter()
+
+    assert count == num_clients
+    assert received_count == num_clients
+
+    total_duration_ms = (end_time - start_time) * 1000
+    assert total_duration_ms < 50.0, (
+        f"High concurrency benchmark failed: {total_duration_ms:.2f}ms >= 50ms"
+    )

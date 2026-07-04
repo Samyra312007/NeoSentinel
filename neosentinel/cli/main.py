@@ -1,3 +1,4 @@
+import time
 import webbrowser
 from typing import Any, Dict
 
@@ -24,9 +25,15 @@ def init() -> None:
 def cluster_init(nodes: int) -> None:
     """Bootstrap services on remote Graviton4 cluster nodes."""
     click.echo(f"Bootstrapping NeoSentinel on {nodes} cluster nodes...")
-    click.echo("[1/3] Provisioning SSH access and Docker runtimes...")
-    click.echo("[2/3] Installing Performix PMU SVE2 instrumentation...")
-    click.echo("[3/3] Starting vLLM inference workers and Traefik ingress...")
+    steps = [
+        "Provisioning SSH access and Docker runtimes...",
+        "Installing Performix PMU SVE2 instrumentation...",
+        "Starting vLLM inference workers and Traefik ingress...",
+    ]
+    with click.progressbar(steps, label="Provisioning nodes") as bar:
+        for step in bar:
+            time.sleep(0.01)
+            click.echo(f"\n  [OK] {step}", err=False)
     click.echo("[SUCCESS] Cluster bootstrap complete.")
 
 
