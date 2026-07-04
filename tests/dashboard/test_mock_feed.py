@@ -17,6 +17,19 @@ def test_load_fixture_success():
     ]
 
 
+def test_load_all_fixture_scenarios():
+    feed = MockTelemetryFeed()
+    for scenario in (
+        "sve2_underutilization",
+        "kv_eviction_flood",
+        "thermal_throttling",
+        "memory_leak_degradation",
+        "network_partition_latency",
+    ):
+        events = feed.load_fixture(scenario)
+        assert len(events) == 5
+
+
 def test_load_fixture_not_found():
     feed = MockTelemetryFeed()
     with pytest.raises(FileNotFoundError):

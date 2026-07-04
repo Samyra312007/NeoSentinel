@@ -13,11 +13,12 @@ def test_cli_help():
     assert "doctor" in result.output
 
 
-def test_init_command():
+def test_init_command(tmp_path):
     runner = CliRunner()
-    result = runner.invoke(cli, ["init"])
-    assert result.exit_code == 0
-    assert "Initializing local NeoSentinel" in result.output
+    with runner.isolated_filesystem(temp_dir=tmp_path):
+        result = runner.invoke(cli, ["init"])
+        assert result.exit_code == 0
+        assert "[SUCCESS] Initialized NeoSentinel config" in result.output
 
 
 def test_cluster_init_command():
@@ -29,6 +30,6 @@ def test_cluster_init_command():
 
 def test_doctor_command():
     runner = CliRunner()
-    result = runner.invoke(cli, ["doctor"])
+    result = runner.invoke(cli, ["doctor", "--mock"])
     assert result.exit_code == 0
     assert "[OK]" in result.output

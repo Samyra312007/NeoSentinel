@@ -25,5 +25,8 @@ test.describe('NeoSentinel E2E Simulation & Dashboard UI Flow', () => {
     const themeButton = page.getByRole('button', { name: /Switch to (light|dark) theme/i });
     await expect(themeButton).toBeVisible();
     await themeButton.click();
+
+    await page.keyboard.press('Tab');
+    await expect(themeButton).toBeFocused();
   });
 });

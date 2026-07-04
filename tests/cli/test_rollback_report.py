@@ -4,16 +4,43 @@ import os
 
 from click.testing import CliRunner
 
+from neosentinel.audit.checkpoints import CheckpointStore
 from neosentinel.cli.main import cli
+from neosentinel.contracts.decision import ActionType
+from neosentinel.contracts.telemetry import BaselineMetrics
 
 
-def test_rollback_command() -> None:
-    """Verify node rollback to specified checkpoint."""
+def test_rollback_command(tmp_path) -> None:
+    store = CheckpointStore(tmp_path / "checkpoints")
+    checkpoint = store.create(
+        decision_id="dec-rollback-test",
+        node_id="node-001",
+        action=ActionType.NOOP,
+        metrics=BaselineMetrics(
+            ttft_p99_ms=131.0,
+            tokens_per_sec=842.0,
+            sve2_utilization_pct=79.0,
+            dram_bandwidth_pct=45.0,
+            cache_miss_rate_pct=3.0,
+            kv_eviction_rate=0.1,
+            requests_per_min=400.0,
+        ),
+        vllm_config={},
+        parameters={},
+    )
     runner = CliRunner()
-    args = ["rollback", "--node", "node-001", "--checkpoint", "chk-graviton4-991"]
+    args = [
+        "rollback",
+        "--node",
+        "node-001",
+        "--checkpoint",
+        checkpoint.checkpoint_id,
+        "--store",
+        str(tmp_path / "checkpoints"),
+    ]
     result = runner.invoke(cli, args)
     assert result.exit_code == 0
-    assert "restored to 'chk-graviton4-991'" in result.output
+    assert checkpoint.checkpoint_id in result.output
 
 
 def test_report_command(tmp_path) -> None:

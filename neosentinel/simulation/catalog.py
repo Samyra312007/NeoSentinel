@@ -68,7 +68,7 @@ SCENARIOS: Dict[str, ScenarioDefinition] = {
             "and DRAM bandwidth saturation."
         ),
         target_node="node-001",
-        expected_action="rebalance_kv_load",
+        expected_action="adjust_vllm_config",
         initial_sve2_pct=91.5,
         initial_ttft_ms=680.0,
         recovered_sve2_pct=82.0,
@@ -82,7 +82,7 @@ SCENARIOS: Dict[str, ScenarioDefinition] = {
             "inference latency degradation."
         ),
         target_node="node-003",
-        expected_action="migrate_workload",
+        expected_action="send_alert",
         initial_sve2_pct=45.0,
         initial_ttft_ms=520.0,
         recovered_sve2_pct=85.0,
@@ -96,7 +96,7 @@ SCENARIOS: Dict[str, ScenarioDefinition] = {
             "memory swap thrashing."
         ),
         target_node="node-002",
-        expected_action="restart_worker",
+        expected_action="scale_worker_threads",
         initial_sve2_pct=15.0,
         initial_ttft_ms=890.0,
         recovered_sve2_pct=88.0,
@@ -110,7 +110,7 @@ SCENARIOS: Dict[str, ScenarioDefinition] = {
             "distributed consensus timeouts."
         ),
         target_node="node-001",
-        expected_action="isolate_node",
+        expected_action="rollback_optimization",
         initial_sve2_pct=10.0,
         initial_ttft_ms=1200.0,
         recovered_sve2_pct=80.0,

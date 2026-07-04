@@ -25,7 +25,7 @@ def test_inject_command_missing_node() -> None:
 def test_replay_command_success() -> None:
     """Verify historical stream replay at scaled speed."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["replay", "--stream", "cluster:telemetry", "--speed", "10.0"])
+    result = runner.invoke(cli, ["replay", "--stream", "sve2_underutilization", "--speed", "50.0"])
     assert result.exit_code == 0
-    assert "Replaying stream 'cluster:telemetry'" in result.output
-    assert "[SUCCESS] Replayed 3 events" in result.output
+    assert "Replaying stream 'sve2_underutilization'" in result.output
+    assert "[SUCCESS] Replayed 5 events" in result.output

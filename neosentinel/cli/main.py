@@ -1,9 +1,14 @@
+import subprocess
+import sys
 import time
 import webbrowser
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any
 
 import click
 
+from neosentinel.cli.config import init_local_config
+from neosentinel.cli.diagnostics import run_doctor
 from neosentinel.simulation.player import inject_anomaly, replay_stream, run_simulation
 
 
@@ -17,24 +22,37 @@ def cli() -> None:
 @cli.command()
 def init() -> None:
     """Initialize local NeoSentinel configuration and environment."""
-    click.echo("Initializing local NeoSentinel environment...")
+    config_path = init_local_config()
+    click.echo(f"[SUCCESS] Initialized NeoSentinel config at '{config_path}'.")
 
 
 @cli.command("cluster-init")
 @click.option("--nodes", default=3, help="Number of nodes to bootstrap.")
-def cluster_init(nodes: int) -> None:
+@click.option("--mock-ssh/--live-ssh", default=True, help="Use mock SSH provisioning.")
+def cluster_init(nodes: int, mock_ssh: bool) -> None:
     """Bootstrap services on remote Graviton4 cluster nodes."""
+    from neosentinel.cli.provision import DEFAULT_STEPS, MockSshRunner, node_hosts
+
+    if nodes < 1:
+        raise click.ClickException("Node count must be at least 1.")
     click.echo(f"Bootstrapping NeoSentinel on {nodes} cluster nodes...")
-    steps = [
-        "Provisioning SSH access and Docker runtimes...",
-        "Installing Performix PMU SVE2 instrumentation...",
-        "Starting vLLM inference workers and Traefik ingress...",
-    ]
-    with click.progressbar(steps, label="Provisioning nodes") as bar:
-        for step in bar:
-            time.sleep(0.01)
-            click.echo(f"\n  [OK] {step}", err=False)
-    click.echo("[SUCCESS] Cluster bootstrap complete.")
+    runner = MockSshRunner() if mock_ssh else None
+    ssh = runner or MockSshRunner()
+    hosts = node_hosts(nodes)
+    total_steps = len(hosts) * len(DEFAULT_STEPS)
+    try:
+        with click.progressbar(length=total_steps, label="Provisioning nodes") as bar:
+            for host in hosts:
+                for step in DEFAULT_STEPS:
+                    code, _output = ssh.run(host, step.command)
+                    if code != 0:
+                        raise RuntimeError(f"Provision failed on {host}: {step.label}")
+                    bar.update(1)
+        mode = "mock SSH" if mock_ssh else "live SSH"
+        click.echo(f"[SUCCESS] Cluster bootstrap complete via {mode}.")
+    except Exception as exc:
+        click.echo(f"[ERROR] Cluster bootstrap failed: {exc}", err=True)
+        raise click.Abort()
 
 
 @cli.command()
@@ -44,29 +62,52 @@ def cluster_init(nodes: int) -> None:
     default=True,
     help="Automatically open the dashboard in a web browser.",
 )
-def start(port: int, open_browser: bool) -> None:
+@click.option(
+    "--serve/--no-serve",
+    default=False,
+    help="Launch the FastAPI dashboard server in the background.",
+)
+def start(port: int, open_browser: bool, serve: bool) -> None:
     """Start the NeoSentinel control plane dashboard server."""
     url = f"http://localhost:{port}"
-    click.echo(f"Starting NeoSentinel dashboard server on {url}...")
+    if serve:
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "uvicorn",
+                "neosentinel.dashboard.server:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                str(port),
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        time.sleep(0.5)
+        click.echo(f"Dashboard server listening on {url}")
+    else:
+        click.echo(f"Starting NeoSentinel dashboard server on {url}...")
     if open_browser:
         webbrowser.open(url)
 
 
 @cli.command()
-def doctor() -> None:
+@click.option("--live/--mock", default=True, help="Run live probes or mock checks.")
+def doctor(live: bool) -> None:
     """Run diagnostic checks on local toolchain and cluster nodes."""
     click.echo("Running NeoSentinel diagnostics...")
-    checks = [
-        "SSH Connectivity & PEM Key Permissions",
-        "Performix PMU SVE2 Hardware Counters",
-        "vLLM Worker Engines & CUDA/SVE2 Kernels",
-        "Redis Streams Telemetry Pipeline",
-        "Ray Distributed Task Scheduler",
-        "Traefik Ingress Controller",
-        "Llama-3.2 Autonomous Agent Reasoning Loop",
-    ]
+    checks = run_doctor(mock=not live)
+    failures = 0
     for check in checks:
-        click.echo(f"[OK] {check}")
+        status = "[OK]" if check.passed else "[FAIL]"
+        if not check.passed:
+            failures += 1
+        click.echo(f"{status} {check.name} — {check.detail}")
+    if failures:
+        click.echo(f"[WARN] {failures} diagnostic check(s) need attention.")
+        raise SystemExit(1)
     click.echo("[SUCCESS] All 7 cluster diagnostic checks operational.")
 
 
@@ -77,7 +118,7 @@ def simulate(scenario: str, speed: float) -> None:
     """Execute an offline end-to-end anomaly and autonomous healing demo simulation."""
     click.echo(f"Starting simulation scenario '{scenario}' at {speed}x speed...")
 
-    def progress_cb(evt: Dict[str, Any]) -> None:
+    def progress_cb(evt: dict[str, Any]) -> None:
         evt_type = evt.get("type", "unknown")
         ts = evt.get("timestamp", "")
         if evt_type == "agent_thought":
@@ -102,10 +143,11 @@ def simulate(scenario: str, speed: float) -> None:
 @cli.command()
 @click.option("--node", required=True, help="Target node ID.")
 @click.option("--anomaly", default="kv_eviction_flood", help="Type of anomaly to inject.")
-def inject(node: str, anomaly: str) -> None:
+@click.option("--mock/--real", default=True, help="Use mock or live degradation injection.")
+def inject(node: str, anomaly: str, mock: bool) -> None:
     """Inject synthetic degradation on a target cluster node."""
     try:
-        res = inject_anomaly(node, anomaly)
+        res = inject_anomaly(node, anomaly, mock=mock)
         click.echo(f"[INJECTED] {res['message']}")
     except Exception as e:
         click.echo(f"[ERROR] Injection failed: {e}", err=True)
@@ -113,7 +155,7 @@ def inject(node: str, anomaly: str) -> None:
 
 
 @cli.command()
-@click.option("--stream", default="cluster:telemetry", help="Redis stream or fixture name.")
+@click.option("--stream", default="sve2_underutilization", help="Redis stream or fixture name.")
 @click.option("--speed", default=1.0, type=float, help="Replay speed multiplier.")
 def replay(stream: str, speed: float) -> None:
     """Replay historical telemetry stream window at N× speed."""
@@ -125,10 +167,26 @@ def replay(stream: str, speed: float) -> None:
 @cli.command()
 @click.option("--node", required=True, help="Target node ID.")
 @click.option("--checkpoint", required=True, help="GitOps checkpoint ID to restore.")
-def rollback(node: str, checkpoint: str) -> None:
+@click.option("--store", default=".neosentinel/checkpoints", help="Checkpoint store directory.")
+def rollback(node: str, checkpoint: str, store: str) -> None:
     """Restore a target node to a known healthy checkpoint state."""
+    from neosentinel.audit.checkpoints import CheckpointStore
+
     click.echo(f"Initiating rollback on node '{node}' to checkpoint '{checkpoint}'...")
-    click.echo(f"[SUCCESS] Node '{node}' successfully restored to '{checkpoint}'.")
+    try:
+        checkpoint_store = CheckpointStore(Path(store))
+        restored = checkpoint_store.restore(checkpoint)
+        if restored.node_id != node:
+            raise ValueError(
+                f"Checkpoint '{checkpoint}' belongs to '{restored.node_id}', not '{node}'"
+            )
+        click.echo(
+            f"[SUCCESS] Node '{node}' restored to '{checkpoint}' "
+            f"(action={restored.action.value})."
+        )
+    except Exception as exc:
+        click.echo(f"[ERROR] Rollback failed: {exc}", err=True)
+        raise click.Abort()
 
 
 @cli.command()

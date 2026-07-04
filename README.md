@@ -6,6 +6,32 @@ Autonomous cluster healing for ARM Graviton inference workloads.
 
 Foundation scaffold, frozen contracts in `neosentinel/contracts/`, and CI skeleton are in place. See [docs/infra/aws-3-node-provisioning.md](docs/infra/aws-3-node-provisioning.md) for the 3-node Graviton4 provisioning checklist.
 
+## Quickstart (5 minutes)
+
+```bash
+pip install -e ".[dev]"
+neosentinel init
+neosentinel doctor --mock
+neosentinel start --no-serve --no-open-browser
+neosentinel simulate --scenario sve2_underutilization --speed 3
+neosentinel report --output cluster_report.html
+```
+
+Offline demo with fixture-driven timeline:
+
+```bash
+neosentinel simulate --scenario sve2_underutilization --speed 3
+neosentinel replay --stream thermal_throttling --speed 10
+```
+
+Dashboard UI (React):
+
+```bash
+cd dashboard-ui
+npm ci
+npm run dev
+```
+
 ## Development
 
 ```bash

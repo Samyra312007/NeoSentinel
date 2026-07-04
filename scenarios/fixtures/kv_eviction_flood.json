@@ -73,7 +73,7 @@
     "timestamp": "2026-07-04T13:00:08Z",
     "healing_id": "heal-002",
     "node_id": "node-001",
-    "action": "rebalance_kv_load",
+    "action": "adjust_vllm_config",
     "status": "success",
     "before": {
       "ttft_p99_ms": 680.0,
@@ -101,7 +101,7 @@
     "commit_sha": "9f8e7d6c5b4a32109876543210fedcba98765432",
     "message": "Auto-heal: rebalanced traffic from node-001 to node-002 (KV eviction rate 45.8 -> 0.2)",
     "node_id": "node-001",
-    "action": "rebalance_kv_load",
+    "action": "adjust_vllm_config",
     "checkpoint_id": "chk-node001-20260704130003"
   }
 ]

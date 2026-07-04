@@ -10,36 +10,39 @@ todos:
     status: completed
   - id: divyansh-w1-shell
     content: "Week 1 (Divyansh): CLI skeleton, FastAPI/WS server, React bootstrap, mock telemetry feed + tests"
-    status: pending
+    status: completed
   - id: sahil-w2-streams
     content: "Week 2 (Sahil): Redis Cluster, TelemetryPipeline (4 streams), vLLM scraper, pipeline integration tests"
     status: completed
   - id: divyansh-w2-ui
     content: "Week 2 (Divyansh): Cluster status + metrics panels, WebSocket broadcaster, dashboard layout + tests"
-    status: pending
+    status: completed
   - id: sahil-w3-agent
     content: "Week 3 (Sahil): Pydantic schemas, llama.cpp agent brain, grammar decode, 30s decision loop + tests"
     status: completed
   - id: divyansh-w3-agent-ui
     content: "Week 3 (Divyansh): Agent Thought stream, D3 flame graph, healing/audit panels, scenario fixtures"
-    status: pending
+    status: completed
   - id: sahil-w4-actions
     content: "Week 4 (Sahil): 6 MCP action tools, checkpoints, GitOps audit, auto-rollback + tests"
     status: completed
   - id: divyansh-w4-sim
     content: "Week 4 (Divyansh): simulate/inject/replay CLI, 5 scenarios, offline demo e2e tests"
-    status: pending
+    status: completed
   - id: sahil-w5-orch
     content: "Week 5 (Sahil): Ray integration, ClusterSentinelOrchestrator, quorum voting + tests"
     status: completed
   - id: divyansh-w5-sdk
     content: "Week 5 (Divyansh): SentinelEngine SDK, cluster-init/doctor/rollback/report CLI, PyPI packaging"
-    status: pending
+    status: completed
   - id: w6-hardening
     content: "Week 6 (Both, independent): Backend load tests + Performix validation (Sahil); Playwright e2e + CI matrix (Divyansh)"
-    status: in_progress
+    status: completed
   - id: sahil-w6-hardening
     content: "Week 6 (Sahil): Redis load test, false-positive tuning, Performix HW validation, Hypothesis tests, report API"
+    status: completed
+  - id: divyansh-w6-hardening
+    content: "Week 6 (Divyansh): WS lag benchmarks, CLI polish, accessibility, Playwright e2e, CI matrix"
     status: completed
   - id: w7-integrate
     content: "Week 7 (Both): 3-node deploy, wire dashboard to real Redis, inject SVE2 scenario, record demo, final doctor green"
@@ -58,12 +61,12 @@ isProject: false
 | Week | Status | Done |
 | ---- | ------ | ---- |
 | Week 0 | 🔄 In progress | 16/17 deliverables |
-| Week 1 | 🔄 In progress | 5/10 deliverables |
-| Week 2 | 🔄 In progress | 5/10 |
-| Week 3 | 🔄 In progress | 5/10 |
-| Week 4 | 🔄 In progress | 6/11 |
-| Week 5 | 🔄 In progress | 5/11 |
-| Week 6 | 🔄 In progress | 5/10 |
+| Week 1 | ✅ Complete | 10/10 deliverables |
+| Week 2 | ✅ Complete | 10/10 |
+| Week 3 | ✅ Complete | 10/10 |
+| Week 4 | ✅ Complete | 11/11 |
+| Week 5 | ✅ Complete | 11/11 |
+| Week 6 | ✅ Complete | 10/10 |
 | Week 7 | ⬜ Not started | 0/10 |
 
 ---
@@ -165,7 +168,7 @@ Joint deliverables before parallel work begins:
 
 ---
 
-## Week 1 — Infrastructure & Shell UX 🔄
+## Week 1 — Infrastructure & Shell UX ✅
 
 ### Sahil — Docker & Telemetry Sensors ✅
 
@@ -177,21 +180,21 @@ Joint deliverables before parallel work begins:
 | [x] S1.4 Performix daemon wrapper | [`neosentinel/telemetry/performix.py`](neosentinel/telemetry/performix.py) — 1Hz PMU collection (SVE2, DRAM BW, cache miss, hotspots)                                                                            | `tests/unit/test_performix_parser.py` — parse sample `apx` output                  |
 | [x] S1.5 Mock Performix for dev   | [`neosentinel/telemetry/mock_performix.py`](neosentinel/telemetry/mock_performix.py) — generates contract-valid PMU frames                                                                                       | `tests/unit/test_mock_performix.py`                                                |
 
-### Divyansh — CLI Bootstrap & Dashboard Skeleton
+### Divyansh — CLI Bootstrap & Dashboard Skeleton ✅
 
 | Task                          | Deliverables                                                                                                                                                                   | Tests                                                  |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| [ ] D1.1 Click CLI skeleton       | [`neosentinel/cli/main.py`](neosentinel/cli/main.py) — `init`, `cluster-init`, `start`, `doctor` command stubs                                                                 | `tests/cli/test_cli_help.py` — all commands registered |
-| [ ] D1.2 FastAPI dashboard server | [`neosentinel/dashboard/server.py`](neosentinel/dashboard/server.py) — health route, WS endpoint stub on `:8080`                                                               | `tests/dashboard/test_server_health.py`                |
-| [ ] D1.3 React app bootstrap      | [`dashboard-ui/`](dashboard-ui/) — Vite + React + TypeScript + Tailwind, WebSocket client hook                                                                                 | `dashboard-ui/src/__tests__/App.test.tsx`              |
-| [ ] D1.4 Mock telemetry feed      | [`neosentinel/dashboard/mock_feed.py`](neosentinel/dashboard/mock_feed.py) — emits contract-valid WS events from JSON fixtures in [`scenarios/fixtures/`](scenarios/fixtures/) | `tests/dashboard/test_mock_feed.py`                    |
-| [ ] D1.5 Auto-open browser        | Hook in `start` command stub — opens `http://localhost:8080`                                                                                                                   | `tests/cli/test_browser_open.py` (mock `webbrowser`)   |
+| [x] D1.1 Click CLI skeleton       | [`neosentinel/cli/main.py`](neosentinel/cli/main.py) — `init`, `cluster-init`, `start`, `doctor` command stubs                                                                 | `tests/cli/test_cli_help.py` — all commands registered |
+| [x] D1.2 FastAPI dashboard server | [`neosentinel/dashboard/server.py`](neosentinel/dashboard/server.py) — health route, WS endpoint stub on `:8080`                                                               | `tests/dashboard/test_server_health.py`                |
+| [x] D1.3 React app bootstrap      | [`dashboard-ui/`](dashboard-ui/) — Vite + React + TypeScript + Tailwind, WebSocket client hook                                                                                 | `dashboard-ui/src/__tests__/App.test.tsx`              |
+| [x] D1.4 Mock telemetry feed      | [`neosentinel/dashboard/mock_feed.py`](neosentinel/dashboard/mock_feed.py) — emits contract-valid WS events from JSON fixtures in [`scenarios/fixtures/`](scenarios/fixtures/) | `tests/dashboard/test_mock_feed.py`                    |
+| [x] D1.5 Auto-open browser        | Hook in `start` command stub — opens `http://localhost:8080`                                                                                                                   | `tests/cli/test_browser_open.py` (mock `webbrowser`)   |
 
 **Week 1 exit:** `docker compose up` runs 3 vLLM backends + Traefik on one node; dashboard loads with mock data; CI green.
 
 ---
 
-## Week 2 — Data Pipeline & Live UI Panels ⬜
+## Week 2 — Data Pipeline & Live UI Panels ✅
 
 ### Sahil — Redis Streams & Metrics Scraper
 
@@ -203,21 +206,21 @@ Joint deliverables before parallel work begins:
 | [x] S2.4 vLLM metrics scraper | [`neosentinel/telemetry/vllm_scraper.py`](neosentinel/telemetry/vllm_scraper.py) — TTFT, tokens/sec, KV eviction (5s interval) | `tests/unit/test_vllm_scraper.py`                                        |
 | [x] S2.5 Pipeline integration | Performix + scraper → Redis at 1Hz/5s                                                                                          | `tests/integration/test_pipeline_e2e.py` — in-memory Redis, no dashboard |
 
-### Divyansh — Dashboard Core Panels
+### Divyansh — Dashboard Core Panels ✅
 
 | Task                          | Deliverables                                                                                                                 | Tests                                               |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| [ ] D2.1 Cluster status panel     | 3-node green/yellow/red cards, requests/min                                                                                  | `dashboard-ui/src/__tests__/ClusterStatus.test.tsx` |
-| [ ] D2.2 Real-time metrics gauges | TTFT P99, tokens/sec, SVE2 %, DRAM BW % per node                                                                             | `dashboard-ui/src/__tests__/MetricsGauges.test.tsx` |
-| [ ] D2.3 WebSocket broadcaster    | [`neosentinel/dashboard/broadcaster.py`](neosentinel/dashboard/broadcaster.py) — reads from mock feed OR Redis (config flag) | `tests/dashboard/test_broadcaster.py`               |
-| [ ] D2.4 WS → React wiring        | Live updates <50ms target (measure in test with mock)                                                                        | `tests/dashboard/test_ws_latency.py`                |
-| [ ] D2.5 Layout shell             | Full dashboard grid matching spec ASCII mockup                                                                               | Visual snapshot test optional                       |
+| [x] D2.1 Cluster status panel     | 3-node green/yellow/red cards, requests/min                                                                                  | `dashboard-ui/src/__tests__/ClusterStatus.test.tsx` |
+| [x] D2.2 Real-time metrics gauges | TTFT P99, tokens/sec, SVE2 %, DRAM BW % per node                                                                             | `dashboard-ui/src/__tests__/MetricsGauges.test.tsx` |
+| [x] D2.3 WebSocket broadcaster    | [`neosentinel/dashboard/broadcaster.py`](neosentinel/dashboard/broadcaster.py) — reads from mock feed OR Redis (config flag) | `tests/dashboard/test_broadcaster.py`               |
+| [x] D2.4 WS → React wiring        | Live updates <50ms target (measure in test with mock)                                                                        | `tests/dashboard/test_ws_latency.py`                |
+| [x] D2.5 Layout shell             | Full dashboard grid matching spec ASCII mockup                                                                               | Visual snapshot test optional                       |
 
 **Week 2 exit:** Sahil's pipeline fills Redis on a single node; Divyansh's dashboard renders live mock stream; both test suites independent.
 
 ---
 
-## Week 3 — Agent Brain & Agent UX ⬜
+## Week 3 — Agent Brain & Agent UX ✅
 
 ### Sahil — Decision Engine
 
@@ -229,21 +232,21 @@ Joint deliverables before parallel work begins:
 | [x] S3.4 30s decision loop          | Read snapshot from Redis → decide → publish to `:decisions` stream                                       | `tests/integration/test_decision_loop.py`                                                |
 | [x] S3.5 Decision tree logic        | TTFT/SVE2/DRAM/KV eviction branching per spec                                                            | `tests/unit/test_decision_tree.py` — parameterized scenarios                             |
 
-### Divyansh — Agent Thought & Flame Graph UI
+### Divyansh — Agent Thought & Flame Graph UI ✅
 
 | Task                            | Deliverables                                                                                                                  | Tests                                              |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| [ ] D3.1 Agent Thought stream panel | Word-by-word streaming text from WS `agent_thought` events                                                                    | `dashboard-ui/src/__tests__/AgentThought.test.tsx` |
-| [ ] D3.2 D3 flame graph             | [`dashboard-ui/src/components/FlameGraph.tsx`](dashboard-ui/src/components/FlameGraph.tsx) — top 5 hotspots, live bar updates | `dashboard-ui/src/__tests__/FlameGraph.test.tsx`   |
-| [ ] D3.3 Healing events feed        | Before/after metrics cards, success/rollback badges                                                                           | `dashboard-ui/src/__tests__/HealingFeed.test.tsx`  |
-| [ ] D3.4 Audit log panel            | Live Git commit entries from WS `audit` events                                                                                | `dashboard-ui/src/__tests__/AuditLog.test.tsx`     |
-| [ ] D3.5 Fixture scenarios          | JSON timelines for `sve2_underutilization` in [`scenarios/`](scenarios/)                                                      | `tests/dashboard/test_scenario_playback.py`        |
+| [x] D3.1 Agent Thought stream panel | Word-by-word streaming text from WS `agent_thought` events                                                                    | `dashboard-ui/src/__tests__/AgentThought.test.tsx` |
+| [x] D3.2 D3 flame graph             | [`dashboard-ui/src/components/FlameGraph.tsx`](dashboard-ui/src/components/FlameGraph.tsx) — top 5 hotspots, live bar updates | `dashboard-ui/src/__tests__/FlameGraph.test.tsx`   |
+| [x] D3.3 Healing events feed        | Before/after metrics cards, success/rollback badges                                                                           | `dashboard-ui/src/__tests__/HealingFeed.test.tsx`  |
+| [x] D3.4 Audit log panel            | Live Git commit entries from WS `audit` events                                                                                | `dashboard-ui/src/__tests__/AuditLog.test.tsx`     |
+| [x] D3.5 Fixture scenarios          | JSON timelines for all 5 scenarios in [`scenarios/fixtures/`](scenarios/fixtures/)                                                      | `tests/dashboard/test_scenario_playback.py`        |
 
 **Week 3 exit:** Sahil's agent publishes decisions to Redis from mock telemetry; Divyansh's UI plays full mock incident timeline end-to-end.
 
 ---
 
-## Week 4 — Actions, Audit & Simulation ⬜
+## Week 4 — Actions, Audit & Simulation ✅
 
 ### Sahil — Action Executor & GitOps
 
@@ -256,21 +259,21 @@ Joint deliverables before parallel work begins:
 | [x] S4.5 Auto-rollback            | If metrics worsen within 90s, restore checkpoint                                                                                                                                    | `tests/integration/test_auto_rollback.py`            |
 | [x] S4.6 Healing stream publisher | Post-action metrics → `:healing` stream                                                                                                                                             | `tests/integration/test_healing_publish.py`          |
 
-### Divyansh — Simulation & Inject CLI
+### Divyansh — Simulation & Inject CLI ✅
 
 | Task                        | Deliverables                                                                                           | Tests                                                   |
 | --------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| [ ] D4.1 `neosentinel simulate` | [`neosentinel/simulation/player.py`](neosentinel/simulation/player.py) — 5 scenarios, speed multiplier | `tests/cli/test_simulate.py` — all 5 scenarios complete |
-| [ ] D4.2 `neosentinel inject`   | Inject degradation on named node (mock or real via flag)                                               | `tests/cli/test_inject.py`                              |
-| [ ] D4.3 `neosentinel replay`   | Replay Redis stream window at N× speed                                                                 | `tests/cli/test_replay.py` — fixture stream             |
-| [ ] D4.4 Scenario definitions   | 5 scenarios table from spec with expected healing action metadata                                      | `tests/unit/test_scenario_catalog.py`                   |
-| [ ] D4.5 Offline demo mode      | Full stack on laptop, zero cloud, `simulate --scenario sve2_underutilization --speed 3x`               | `tests/e2e/test_offline_demo.py` — mock only            |
+| [x] D4.1 `neosentinel simulate` | [`neosentinel/simulation/player.py`](neosentinel/simulation/player.py) — 5 scenarios, speed multiplier | `tests/cli/test_simulate.py` — all 5 scenarios complete |
+| [x] D4.2 `neosentinel inject`   | Inject degradation on named node (mock or real via flag)                                               | `tests/cli/test_inject.py`                              |
+| [x] D4.3 `neosentinel replay`   | Replay Redis stream window at N× speed                                                                 | `tests/cli/test_replay.py` — fixture stream             |
+| [x] D4.4 Scenario definitions   | 5 scenarios table from spec with expected healing action metadata                                      | `tests/unit/test_scenario_catalog.py`                   |
+| [x] D4.5 Offline demo mode      | Full stack on laptop, zero cloud, `simulate --scenario sve2_underutilization --speed 3x`               | `tests/e2e/test_offline_demo.py` — mock only            |
 
 **Week 4 exit:** Sahil's action executor heals mock degradation and commits to git; Divyansh's simulate command runs 3-min demo on any laptop.
 
 ---
 
-## Week 5 — Orchestration & SDK ⬜
+## Week 5 — Orchestration & SDK ✅
 
 ### Sahil — Cluster Orchestrator & Ray
 
@@ -282,22 +285,22 @@ Joint deliverables before parallel work begins:
 | [x] S5.4 Rolling restart logic       | node-002 first pattern from spec                                                                                                 | `tests/integration/test_rolling_restart.py`         |
 | [x] S5.5 Ray + Redis integration     | Orchestrator dispatches via Ray, reads all 3 node streams                                                                        | `tests/integration/test_orchestrator_e2e.py`        |
 
-### Divyansh — SDK, Packaging & Doctor
+### Divyansh — SDK, Packaging & Doctor ✅
 
 | Task                                     | Deliverables                                                                                                                             | Tests                                       |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| [ ] D5.1 Public SDK API                      | [`neosentinel/engine.py`](neosentinel/engine.py) — `SentinelEngine`, `PerformixTarget`, `ClusterConfig`, `@on_alert`, `@register_action` | `tests/unit/test_sdk_api.py`                |
-| [ ] D5.2 `neosentinel init` / `cluster-init` | SSH provisioning scripts, Docker install, service bootstrap                                                                              | `tests/cli/test_cluster_init.py` — mock SSH |
-| [ ] D5.3 `neosentinel doctor`                | 7 validation checks from spec (SSH, Performix, vLLM, Redis, Ray, Traefik, agent)                                                         | `tests/cli/test_doctor.py`                  |
-| [ ] D5.4 `neosentinel rollback` / `report`   | One-command rollback; HTML report generator                                                                                              | `tests/cli/test_rollback_report.py`         |
-| [ ] D5.5 PyPI packaging                      | `pip install .` works, entry point `neosentinel`                                                                                         | `tests/packaging/test_install.py`           |
-| [ ] D5.6 README + quickstart                 | 5-minute getting started, simulate instructions                                                                                          | Manual review checklist                     |
+| [x] D5.1 Public SDK API                      | [`neosentinel/engine.py`](neosentinel/engine.py) — `SentinelEngine`, `PerformixTarget`, `ClusterConfig`, `@on_alert`, `@register_action` | `tests/unit/test_sdk_api.py`                |
+| [x] D5.2 `neosentinel init` / `cluster-init` | SSH provisioning scripts, Docker install, service bootstrap                                                                              | `tests/cli/test_cluster_init.py` — mock SSH |
+| [x] D5.3 `neosentinel doctor`                | 7 validation checks from spec (SSH, Performix, vLLM, Redis, Ray, Traefik, agent)                                                         | `tests/cli/test_doctor.py`                  |
+| [x] D5.4 `neosentinel rollback` / `report`   | One-command rollback; HTML report generator                                                                                              | `tests/cli/test_rollback_report.py`         |
+| [x] D5.5 PyPI packaging                      | `pip install .` works, entry point `neosentinel`                                                                                         | `tests/packaging/test_install.py`           |
+| [x] D5.6 README + quickstart                 | 5-minute getting started, simulate instructions                                                                                          | Manual review checklist                     |
 
 **Week 5 exit:** Sahil's orchestrator runs quorum on 3-node Redis (can use 3 Docker hosts); Divyansh's `pip install neosentinel` + full CLI works locally.
 
 ---
 
-## Week 6 — Hardening & Single-Track Tests ⬜
+## Week 6 — Hardening & Single-Track Tests ✅
 
 Each owner hardens their track; still no cross-dependency.
 

@@ -1,0 +1,89 @@
+[
+  {
+    "type": "metrics",
+    "timestamp": "2026-07-04T16:00:00Z",
+    "cluster_id": "cluster-graviton4",
+    "nodes": [
+      {
+        "node_id": "node-001",
+        "status": "unhealthy",
+        "timestamp": "2026-07-04T16:00:00Z",
+        "ttft_p99_ms": 1200.0,
+        "tokens_per_sec": 5.0,
+        "sve2_utilization_pct": 10.0,
+        "dram_bandwidth_pct": 40.0,
+        "cache_miss_rate_pct": 80.0,
+        "kv_eviction_rate": 0.1,
+        "requests_per_min": 120.0,
+        "hotspots": [
+          {
+            "symbol": "nccl_allreduce_timeout",
+            "samples_pct": 48.0,
+            "module": "distributed"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "agent_thought",
+    "timestamp": "2026-07-04T16:00:05Z",
+    "decision_id": "dec-005",
+    "node_id": "node-001",
+    "chunk": "Network partition detected on tensor-parallel interconnect for node-001. Rolling back recent optimization and restoring last stable checkpoint.",
+    "done": true
+  },
+  {
+    "type": "flame_graph",
+    "timestamp": "2026-07-04T16:00:06Z",
+    "node_id": "node-001",
+    "hotspots": [
+      {
+        "symbol": "nccl_allreduce_timeout",
+        "samples_pct": 48.0,
+        "module": "distributed"
+      },
+      {
+        "symbol": "rpc_retry_backoff",
+        "samples_pct": 35.0,
+        "module": "ray"
+      }
+    ]
+  },
+  {
+    "type": "healing",
+    "timestamp": "2026-07-04T16:00:12Z",
+    "healing_id": "heal-005",
+    "node_id": "node-001",
+    "action": "rollback_optimization",
+    "status": "success",
+    "before": {
+      "ttft_p99_ms": 1200.0,
+      "tokens_per_sec": 5.0,
+      "sve2_utilization_pct": 10.0,
+      "dram_bandwidth_pct": 40.0,
+      "cache_miss_rate_pct": 80.0,
+      "kv_eviction_rate": 0.1,
+      "requests_per_min": 120.0
+    },
+    "after": {
+      "ttft_p99_ms": 110.0,
+      "tokens_per_sec": 44.0,
+      "sve2_utilization_pct": 80.0,
+      "dram_bandwidth_pct": 52.0,
+      "cache_miss_rate_pct": 10.0,
+      "kv_eviction_rate": 0.2,
+      "requests_per_min": 340.0
+    },
+    "duration_ms": 6100
+  },
+  {
+    "type": "audit",
+    "timestamp": "2026-07-04T16:00:13Z",
+    "commit_sha": "abcdef1234567890abcdef1234567890abcdef12",
+    "message": "Auto-heal: rolled back optimization on node-001 (TTFT 1200ms -> 110ms)",
+    "node_id": "node-001",
+    "action": "rollback_optimization",
+    "checkpoint_id": "chk-node001-20260704160005"
+  }
+]
