@@ -31,7 +31,7 @@ todos:
     status: pending
   - id: sahil-w5-orch
     content: "Week 5 (Sahil): Ray integration, ClusterSentinelOrchestrator, quorum voting + tests"
-    status: pending
+    status: completed
   - id: divyansh-w5-sdk
     content: "Week 5 (Divyansh): SentinelEngine SDK, cluster-init/doctor/rollback/report CLI, PyPI packaging"
     status: pending
@@ -59,7 +59,7 @@ isProject: false
 | Week 2 | 🔄 In progress | 5/10 |
 | Week 3 | 🔄 In progress | 5/10 |
 | Week 4 | 🔄 In progress | 6/11 |
-| Week 5 | ⬜ Not started | 0/11 |
+| Week 5 | 🔄 In progress | 5/11 |
 | Week 6 | ⬜ Not started | 0/10 |
 | Week 7 | ⬜ Not started | 0/10 |
 
@@ -273,11 +273,11 @@ Joint deliverables before parallel work begins:
 
 | Task                             | Deliverables                                                                                                                     | Tests                                               |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| [ ] S5.1 Ray cluster integration     | [`neosentinel/distributed/ray_tasks.py`](neosentinel/distributed/ray_tasks.py) — parallel Performix recipes, remote config apply | `tests/integration/test_ray_dispatch.py`            |
-| [ ] S5.2 ClusterSentinelOrchestrator | [`neosentinel/orchestrator/cluster.py`](neosentinel/orchestrator/cluster.py) — cross-node correlation                            | `tests/unit/test_cross_node_correlation.py`         |
-| [ ] S5.3 Quorum voting               | 2/3 agree before cluster-wide actions                                                                                            | `tests/unit/test_quorum.py` — all vote combinations |
-| [ ] S5.4 Rolling restart logic       | node-002 first pattern from spec                                                                                                 | `tests/integration/test_rolling_restart.py`         |
-| [ ] S5.5 Ray + Redis integration     | Orchestrator dispatches via Ray, reads all 3 node streams                                                                        | `tests/integration/test_orchestrator_e2e.py`        |
+| [x] S5.1 Ray cluster integration     | [`neosentinel/distributed/ray_tasks.py`](neosentinel/distributed/ray_tasks.py) — parallel Performix recipes, remote config apply | `tests/integration/test_ray_dispatch.py`            |
+| [x] S5.2 ClusterSentinelOrchestrator | [`neosentinel/orchestrator/cluster.py`](neosentinel/orchestrator/cluster.py) — cross-node correlation                            | `tests/unit/test_cross_node_correlation.py`         |
+| [x] S5.3 Quorum voting               | 2/3 agree before cluster-wide actions                                                                                            | `tests/unit/test_quorum.py` — all vote combinations |
+| [x] S5.4 Rolling restart logic       | node-002 first pattern from spec                                                                                                 | `tests/integration/test_rolling_restart.py`         |
+| [x] S5.5 Ray + Redis integration     | Orchestrator dispatches via Ray, reads all 3 node streams                                                                        | `tests/integration/test_orchestrator_e2e.py`        |
 
 ### Divyansh — SDK, Packaging & Doctor
 
