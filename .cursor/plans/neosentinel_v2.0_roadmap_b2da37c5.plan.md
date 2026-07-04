@@ -7,13 +7,13 @@ todos:
     status: in_progress
   - id: sahil-w1-infra
     content: "Week 1 (Sahil): Docker Compose stack, Traefik, vLLM, Performix wrapper + mock, integration tests"
-    status: pending
+    status: completed
   - id: divyansh-w1-shell
     content: "Week 1 (Divyansh): CLI skeleton, FastAPI/WS server, React bootstrap, mock telemetry feed + tests"
     status: pending
   - id: sahil-w2-streams
     content: "Week 2 (Sahil): Redis Cluster, TelemetryPipeline (4 streams), vLLM scraper, pipeline integration tests"
-    status: pending
+    status: completed
   - id: divyansh-w2-ui
     content: "Week 2 (Divyansh): Cluster status + metrics panels, WebSocket broadcaster, dashboard layout + tests"
     status: pending
@@ -46,7 +46,7 @@ isProject: false
 
 # NeoSentinel v2.0 — End-to-End Build Roadmap
 
-**Context:** Repo at [`C:\Users\kumar\OneDrive\Desktop\NeoSentinel`](C:\Users\kumar\OneDrive\Desktop\NeoSentinel). **Week 0 in progress** — scaffold, contracts, CI, and provisioning doc done; Graviton4 instances not yet provisioned. Target: production-grade demo on **3× AWS Graviton4 (c8g.4xlarge)** with **tests at every step**.
+**Context:** Repo at [`C:\Users\kumar\OneDrive\Desktop\NeoSentinel`](C:\Users\kumar\OneDrive\Desktop\NeoSentinel). **Week 0 nearly complete** — scaffold, contracts, CI, and provisioning doc done; Graviton4 instances not yet provisioned. **Week 1 Sahil track complete** — Docker stack, Traefik, vLLM templates, Performix + mock, and tests shipped. Target: production-grade demo on **3× AWS Graviton4 (c8g.4xlarge)** with **tests at every step**.
 
 **Parallel-work rule:** Sahil and Divyansh never block each other during Weeks 1–6. They integrate only in Week 7 using pre-agreed contracts in [`neosentinel/contracts/`](neosentinel/contracts/).
 
@@ -55,8 +55,8 @@ isProject: false
 | Week | Status | Done |
 | ---- | ------ | ---- |
 | Week 0 | 🔄 In progress | 16/17 deliverables |
-| Week 1 | ⬜ Not started | 0/10 |
-| Week 2 | ⬜ Not started | 0/10 |
+| Week 1 | 🔄 In progress | 5/10 deliverables |
+| Week 2 | 🔄 In progress | 5/10 |
 | Week 3 | ⬜ Not started | 0/10 |
 | Week 4 | ⬜ Not started | 0/11 |
 | Week 5 | ⬜ Not started | 0/11 |
@@ -162,17 +162,17 @@ Joint deliverables before parallel work begins:
 
 ---
 
-## Week 1 — Infrastructure & Shell UX ⬜
+## Week 1 — Infrastructure & Shell UX 🔄
 
-### Sahil — Docker & Telemetry Sensors
+### Sahil — Docker & Telemetry Sensors ✅
 
 | Task                          | Deliverables                                                                                                                                                                                                     | Tests                                                                              |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [ ] S1.1 Docker Compose stack     | [`docker/docker-compose.yml`](docker/docker-compose.yml), per-service dirs: [`docker/traefik/`](docker/traefik/), [`docker/vllm/`](docker/vllm/), [`docker/redis/`](docker/redis/), [`docker/ray/`](docker/ray/) | `tests/integration/test_compose_health.py` — services start, `/health` returns 200 |
-| [ ] S1.2 Traefik L7 config        | Round-robin, health checks 10s, circuit breaker >50% errors, rate limit 1000 req/min                                                                                                                             | `tests/unit/test_traefik_config.py` — config validation                            |
-| [ ] S1.3 vLLM worker template     | Llama 3.2 7B INT4, `/metrics` + `/v1/completions`, KleidiAI build flags documented                                                                                                                               | `tests/integration/test_vllm_endpoint.py` — completion + metrics scrape            |
-| [ ] S1.4 Performix daemon wrapper | [`neosentinel/telemetry/performix.py`](neosentinel/telemetry/performix.py) — 1Hz PMU collection (SVE2, DRAM BW, cache miss, hotspots)                                                                            | `tests/unit/test_performix_parser.py` — parse sample `apx` output                  |
-| [ ] S1.5 Mock Performix for dev   | [`neosentinel/telemetry/mock_performix.py`](neosentinel/telemetry/mock_performix.py) — generates contract-valid PMU frames                                                                                       | `tests/unit/test_mock_performix.py`                                                |
+| [x] S1.1 Docker Compose stack     | [`docker/docker-compose.yml`](docker/docker-compose.yml), per-service dirs: [`docker/traefik/`](docker/traefik/), [`docker/vllm/`](docker/vllm/), [`docker/redis/`](docker/redis/), [`docker/ray/`](docker/ray/) | `tests/integration/test_compose_health.py` — services start, `/health` returns 200 |
+| [x] S1.2 Traefik L7 config        | Round-robin, health checks 10s, circuit breaker >50% errors, rate limit 1000 req/min                                                                                                                             | `tests/unit/test_traefik_config.py` — config validation                            |
+| [x] S1.3 vLLM worker template     | Llama 3.2 7B INT4, `/metrics` + `/v1/completions`, KleidiAI build flags documented                                                                                                                               | `tests/integration/test_vllm_endpoint.py` — completion + metrics scrape            |
+| [x] S1.4 Performix daemon wrapper | [`neosentinel/telemetry/performix.py`](neosentinel/telemetry/performix.py) — 1Hz PMU collection (SVE2, DRAM BW, cache miss, hotspots)                                                                            | `tests/unit/test_performix_parser.py` — parse sample `apx` output                  |
+| [x] S1.5 Mock Performix for dev   | [`neosentinel/telemetry/mock_performix.py`](neosentinel/telemetry/mock_performix.py) — generates contract-valid PMU frames                                                                                       | `tests/unit/test_mock_performix.py`                                                |
 
 ### Divyansh — CLI Bootstrap & Dashboard Skeleton
 
@@ -194,11 +194,11 @@ Joint deliverables before parallel work begins:
 
 | Task                      | Deliverables                                                                                                                   | Tests                                                                    |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| [ ] S2.1 Redis Cluster config | 3-shard cluster in Compose, cross-node replication                                                                             | `tests/integration/test_redis_cluster.py` — slot coverage, failover      |
-| [ ] S2.2 Telemetry pipeline   | [`neosentinel/distributed/streams.py`](neosentinel/distributed/streams.py) — `TelemetryPipeline` with XADD/XREAD/XACK          | `tests/unit/test_streams_xack.py` — at-least-once delivery               |
-| [ ] S2.3 Four streams         | `neosentinel:telemetry:pmu`, `:vllm`, `:decisions`, `:healing` + consumer groups                                               | `tests/integration/test_stream_retention.py` — 24hr TTL                  |
-| [ ] S2.4 vLLM metrics scraper | [`neosentinel/telemetry/vllm_scraper.py`](neosentinel/telemetry/vllm_scraper.py) — TTFT, tokens/sec, KV eviction (5s interval) | `tests/unit/test_vllm_scraper.py`                                        |
-| [ ] S2.5 Pipeline integration | Performix + scraper → Redis at 1Hz/5s                                                                                          | `tests/integration/test_pipeline_e2e.py` — in-memory Redis, no dashboard |
+| [x] S2.1 Redis Cluster config | 3-shard cluster in Compose, cross-node replication                                                                             | `tests/integration/test_redis_cluster.py` — slot coverage, failover      |
+| [x] S2.2 Telemetry pipeline   | [`neosentinel/distributed/streams.py`](neosentinel/distributed/streams.py) — `TelemetryPipeline` with XADD/XREAD/XACK          | `tests/unit/test_streams_xack.py` — at-least-once delivery               |
+| [x] S2.3 Four streams         | `neosentinel:telemetry:pmu`, `:vllm`, `:decisions`, `:healing` + consumer groups                                               | `tests/integration/test_stream_retention.py` — 24hr TTL                  |
+| [x] S2.4 vLLM metrics scraper | [`neosentinel/telemetry/vllm_scraper.py`](neosentinel/telemetry/vllm_scraper.py) — TTFT, tokens/sec, KV eviction (5s interval) | `tests/unit/test_vllm_scraper.py`                                        |
+| [x] S2.5 Pipeline integration | Performix + scraper → Redis at 1Hz/5s                                                                                          | `tests/integration/test_pipeline_e2e.py` — in-memory Redis, no dashboard |
 
 ### Divyansh — Dashboard Core Panels
 

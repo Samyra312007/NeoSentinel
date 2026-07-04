@@ -11,7 +11,13 @@ REQUIRED_SERVICES = {
     "vllm-worker-1",
     "vllm-worker-2",
     "vllm-worker-3",
-    "redis",
+    "redis-node-1",
+    "redis-node-2",
+    "redis-node-3",
+    "redis-node-4",
+    "redis-node-5",
+    "redis-node-6",
+    "redis-cluster-init",
     "ray-head",
 }
 
@@ -32,9 +38,9 @@ class TestComposeHealth:
             body = json.loads(resp.read())
             assert body["status"] == "ok"
 
-    def test_redis_responds_to_ping(self, compose_stack):
+    def test_redis_cluster_responds_to_ping(self, compose_stack):
         result = subprocess.run(
-            ["docker", "exec", "neosentinel-redis", "redis-cli", "ping"],
+            ["docker", "exec", "neosentinel-redis-node-1", "redis-cli", "ping"],
             capture_output=True,
             text=True,
             timeout=10,
