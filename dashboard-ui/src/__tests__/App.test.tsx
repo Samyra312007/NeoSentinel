@@ -22,9 +22,9 @@ vi.mock('../hooks/useWebSocket', () => ({
 describe('App', () => {
   it('renders dashboard header and cluster overview', () => {
     render(<App />);
-    expect(screen.getByText(/NeoSentinel v2\.0/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /NeoSentinel/i })).toBeInTheDocument();
     expect(screen.getByText(/Graviton4 Control Plane/i)).toBeInTheDocument();
     expect(screen.getByText(/Cluster Overview/i)).toBeInTheDocument();
-    expect(screen.getByText(/CONNECTED/i)).toBeInTheDocument();
+    expect(screen.getByText(/Live/i)).toBeInTheDocument();
   });
 });

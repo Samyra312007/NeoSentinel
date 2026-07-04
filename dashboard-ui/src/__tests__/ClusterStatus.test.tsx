@@ -19,6 +19,7 @@ describe('Cluster Status Panel (NodeCard)', () => {
       {
         symbol: 'gemm_sve2_int4',
         samples_pct: 45.2,
+        module: 'kleidiai',
       },
     ],
   };

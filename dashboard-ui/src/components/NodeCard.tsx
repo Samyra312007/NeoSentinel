@@ -6,6 +6,14 @@ interface NodeCardProps {
   now: number;
 }
 
+/**
+ * Single-node health card.
+ *
+ * NOTE: the main dashboard now renders nodes via `NodesTable`; this card is
+ * retained because the Week 2 `ClusterStatus.test.tsx` suite exercises it and
+ * it stays useful as a standalone/detail view.
+ */
+
 /** A horizontal utilization bar; colour shifts as it approaches saturation. */
 function Meter({ label, pct }: { label: string; pct: number }) {
   const clamped = Math.max(0, Math.min(100, pct));

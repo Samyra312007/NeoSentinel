@@ -145,3 +145,53 @@ export function eventSource(event: WebSocketEvent): string {
   if ('cluster_id' in event && event.cluster_id) return event.cluster_id;
   return 'system';
 }
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+/** Wall-clock HH:MM:SS from an epoch-ms value — the live header clock. */
+export function formatClock(ms: number): string {
+  const d = new Date(ms);
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
+
+/** HH:MM:SS from an ISO timestamp; '--:--:--' if absent/unparseable. */
+export function isoClock(timestamp?: string): string {
+  if (!timestamp) return '--:--:--';
+  const t = Date.parse(timestamp);
+  if (Number.isNaN(t)) return '--:--:--';
+  const d = new Date(t);
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
+
+/** ASCII block gauge, e.g. 82 -> "████████░░". */
+export function utilBlocks(pct: number, segments = 10): string {
+  const clamped = Math.max(0, Math.min(100, pct));
+  const filled = Math.round((clamped / 100) * segments);
+  return '█'.repeat(filled) + '░'.repeat(segments - filled);
+}
+
+/** Terminal colour for a utilization bar. `higherBetter` flips the semantics. */
+export function meterColor(pct: number, higherBetter = false): string {
+  if (higherBetter) {
+    return pct >= 60 ? 'text-emerald-400' : pct >= 35 ? 'text-amber-400' : 'text-red-400';
+  }
+  return pct >= 85 ? 'text-red-400' : pct >= 65 ? 'text-amber-400' : 'text-emerald-400';
+}
+
+/** Short status code + colour for a node, e.g. "▲ OK". */
+export const NODE_STATUS: Record<NodeStatus, { code: string; cls: string }> = {
+  healthy: { code: '▲ OK', cls: 'text-emerald-400' },
+  degraded: { code: '▼ DEGR', cls: 'text-amber-400' },
+  unhealthy: { code: '▼ CRIT', cls: 'text-red-400' },
+  unknown: { code: '◆ UNK', cls: 'text-subtle' },
+};
+
+/** Short type tag + colour for an event row. */
+export const EVENT_TAG: Record<string, { code: string; cls: string }> = {
+  metrics: { code: 'METRICS', cls: 'text-sky-400' },
+  agent_thought: { code: 'AGENT', cls: 'text-violet-400' },
+  flame_graph: { code: 'FLAME', cls: 'text-amber-400' },
+  healing: { code: 'HEAL', cls: 'text-emerald-400' },
+  audit: { code: 'AUDIT', cls: 'text-cyan-400' },
+  unknown: { code: 'EVENT', cls: 'text-subtle' },
+};

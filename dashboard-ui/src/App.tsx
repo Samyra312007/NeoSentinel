@@ -1,21 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useTheme } from './hooks/useTheme';
+import { StatusIndicator } from './components/Brand';
 import { ThemeToggle } from './components/ThemeToggle';
 import { StatCard } from './components/StatCard';
-import { NodeCard } from './components/NodeCard';
-import { EventStream } from './components/EventStream';
-import {
-  average,
-  formatNumber,
-  latestMetrics,
-} from './lib/telemetry';
+import { NodesTable } from './components/NodesTable';
+import { EventsTable } from './components/EventsTable';
+import { average, formatClock, formatNumber, latestMetrics } from './lib/telemetry';
+
+function PanelHeader({ id, title, meta }: { id: string; title: string; meta: string }) {
+  return (
+    <div className="flex items-center justify-between border-b border-line bg-surface-2/50 px-3 py-1.5">
+      <h3 id={id} className="text-[11px] font-bold uppercase tracking-[0.15em] text-brand">
+        {title}
+      </h3>
+      <span className="text-[10px] uppercase tracking-wider text-muted">{meta}</span>
+    </div>
+  );
+}
 
 function App() {
   const { theme, toggleTheme } = useTheme();
   const { connected, error, messages } = useWebSocket('ws://localhost:8080/ws');
 
-  // A slow tick so relative timestamps stay fresh without re-rendering per event.
+  // Live clock + fresh relative timestamps, ticking once a second.
   const [now, setNow] = useState<number>(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -38,126 +46,64 @@ function App() {
   }, [metrics]);
 
   const nodes = metrics?.nodes ?? [];
+  const hasNodes = nodes.length > 0;
 
   return (
-    <div className="min-h-screen bg-bg font-sans text-content">
-      <header className="sticky top-0 z-10 border-b border-line bg-surface/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
-            <span className="relative flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
-            </span>
-            <h1 className="text-lg font-bold tracking-tight text-content">NeoSentinel v2.0</h1>
-            <span className="hidden rounded-md border border-line bg-surface-2/60 px-2 py-0.5 font-mono text-xs text-muted sm:inline">
-              Graviton4 Control Plane
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="hidden text-muted sm:inline">WebSocket</span>
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
-                  connected
-                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                    : 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300'
-                }`}
-              >
-                <span className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                {connected ? 'CONNECTED' : 'DISCONNECTED'}
-              </span>
-            </div>
-            <ThemeToggle theme={theme} onToggle={toggleTheme} />
-          </div>
+    <div className="min-h-screen bg-bg font-mono text-content">
+      {/* STATUS LINE */}
+      <header className="sticky top-0 z-20 flex h-9 items-center gap-2 border-b border-line bg-surface px-3">
+        <h1 className="shrink-0 text-[12px] font-bold tracking-[0.25em] text-brand">NEOSENTINEL</h1>
+        <span className="hidden flex-1 select-none overflow-hidden whitespace-nowrap text-line sm:block" aria-hidden="true">
+          ////////////////////////////////////////////////////////////////////////////
+        </span>
+        <span className="hidden shrink-0 text-[10px] uppercase tracking-wider text-muted md:inline">
+          Graviton4 Control Plane
+        </span>
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+          <span className="tnum text-[11px] font-bold text-accent">{formatClock(now)}</span>
+          <span className="text-subtle">·</span>
+          <StatusIndicator connected={connected} />
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
-        {error && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-700 dark:text-red-300">
-            {error} — retrying connection to the control plane.
-          </div>
-        )}
-
-        <section aria-labelledby="overview-heading">
-          <div className="mb-3 flex items-baseline justify-between">
-            <h2 id="overview-heading" className="text-base font-semibold text-content">
-              Cluster Overview
-            </h2>
-            <p className="text-xs text-muted">
-              Autonomous healing active ·{' '}
-              <span className="tnum font-semibold text-brand">{messages.length}</span> events received
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            <StatCard
-              label="Nodes"
-              value={summary.total}
-              hint={`${summary.healthy} healthy · ${summary.degraded} attention`}
-              accent="bg-brand"
-            />
-            <StatCard
-              label="Healthy"
-              value={summary.total > 0 ? summary.healthy : '—'}
-              unit={summary.total > 0 ? `/ ${summary.total}` : undefined}
-              accent="bg-emerald-500"
-            />
-            <StatCard
-              label="Avg TTFT p99"
-              value={summary.total > 0 ? formatNumber(summary.avgTtft, 0) : '—'}
-              unit="ms"
-              accent="bg-sky-500"
-            />
-            <StatCard
-              label="Avg Throughput"
-              value={summary.total > 0 ? formatNumber(summary.avgTokens, 1) : '—'}
-              unit="tok/s"
-              accent="bg-violet-500"
-            />
-            <StatCard
-              label="Avg SVE2"
-              value={summary.total > 0 ? formatNumber(summary.avgSve2, 0) : '—'}
-              unit="%"
-              accent="bg-cyan-500"
-            />
-          </div>
-        </section>
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <section aria-labelledby="nodes-heading" className="lg:col-span-2">
-            <h2 id="nodes-heading" className="mb-3 text-base font-semibold text-content">
-              Nodes
-            </h2>
-            {nodes.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {nodes.map((node) => (
-                  <NodeCard key={node.node_id} node={node} now={now} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex min-h-[200px] items-center justify-center rounded-xl border border-dashed border-line bg-surface/50 text-sm text-muted">
-                No node snapshots yet — awaiting first metrics event.
-              </div>
-            )}
-          </section>
-
-          <section aria-labelledby="stream-heading" className="lg:col-span-1">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 id="stream-heading" className="text-base font-semibold text-content">
-                Decision Stream
-              </h2>
-              <span className="font-mono text-xs text-subtle">real-time</span>
-            </div>
-            <div className="rounded-xl border border-line bg-surface p-3 shadow-card">
-              <EventStream events={messages} now={now} />
-            </div>
-          </section>
+      {error && (
+        <div className="border-b border-red-500/40 bg-red-500/10 px-3 py-1 text-[11px] uppercase tracking-wider text-red-400">
+          ! {error} — retrying
         </div>
-      </main>
+      )}
 
-      <footer className="mx-auto max-w-7xl px-4 py-6 text-center text-xs text-subtle sm:px-6">
+      {/* CLUSTER OVERVIEW */}
+      <div className="flex items-center justify-between border-b border-line bg-surface-2/50 px-3 py-1.5">
+        <h2 id="overview" className="text-[11px] font-bold uppercase tracking-[0.15em] text-brand">
+          Cluster Overview
+        </h2>
+        <span className="text-[10px] uppercase tracking-wider text-muted">
+          Autonomous healing active · <span className="tnum text-content">{messages.length}</span> events
+        </span>
+      </div>
+
+      <div className="flex flex-wrap divide-x divide-line border-b border-line">
+        <StatCard label="Nodes" value={summary.total} hint={`${summary.healthy} ok · ${summary.degraded} attn`} accent="bg-brand" />
+        <StatCard label="Healthy" value={hasNodes ? summary.healthy : '—'} unit={hasNodes ? `/ ${summary.total}` : undefined} accent="bg-emerald-500" />
+        <StatCard label="Avg TTFT p99" value={hasNodes ? formatNumber(summary.avgTtft, 0) : '—'} unit="ms" accent="bg-accent" />
+        <StatCard label="Avg Throughput" value={hasNodes ? formatNumber(summary.avgTokens, 1) : '—'} unit="tok/s" accent="bg-violet-500" />
+        <StatCard label="Avg SVE2" value={hasNodes ? formatNumber(summary.avgSve2, 0) : '—'} unit="%" accent="bg-cyan-500" />
+      </div>
+
+      {/* NODES */}
+      <section aria-labelledby="nodes">
+        <PanelHeader id="nodes" title="Nodes" meta={`${summary.total} monitored`} />
+        <NodesTable nodes={nodes} />
+      </section>
+
+      {/* DECISION STREAM */}
+      <section aria-labelledby="stream">
+        <PanelHeader id="stream" title="Decision Stream" meta="real-time" />
+        <EventsTable events={messages} now={now} />
+      </section>
+
+      <footer className="px-3 py-3 text-[10px] uppercase tracking-wider text-subtle">
         NeoSentinel · Graviton4 autonomous inference control plane
       </footer>
     </div>
