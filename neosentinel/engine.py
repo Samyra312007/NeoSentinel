@@ -38,22 +38,33 @@ def on_alert() -> Callable[[Callable[[Dict[str, Any]], None]], Callable[[Dict[st
 
     def decorator(func: Callable[[Dict[str, Any]], None]) -> Callable[[Dict[str, Any]], None]:
         _ALERT_HANDLERS.append(func)
+
         @functools.wraps(func)
         def wrapper(alert: Dict[str, Any]) -> None:
             return func(alert)
+
         return wrapper
 
     return decorator
 
 
-def register_action(name: str) -> Callable[[Callable[[str, Dict[str, Any]], Any]], Callable[[str, Dict[str, Any]], Any]]:
+def register_action(
+    name: str,
+) -> Callable[
+    [Callable[[str, Dict[str, Any]], Any]],
+    Callable[[str, Dict[str, Any]], Any],
+]:
     """Decorator to register a custom healing action handler."""
 
-    def decorator(func: Callable[[str, Dict[str, Any]], Any]) -> Callable[[str, Dict[str, Any]], Any]:
+    def decorator(
+        func: Callable[[str, Dict[str, Any]], Any],
+    ) -> Callable[[str, Dict[str, Any]], Any]:
         _ACTION_HANDLERS[name] = func
+
         @functools.wraps(func)
         def wrapper(node_id: str, params: Dict[str, Any]) -> Any:
             return func(node_id, params)
+
         return wrapper
 
     return decorator
@@ -76,7 +87,9 @@ class SentinelEngine:
         """Stop the Sentinel monitoring engine."""
         self.running = False
 
-    def trigger_healing(self, node_id: str, action: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def trigger_healing(
+        self, node_id: str, action: str, params: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Manually or autonomously trigger a registered healing action on a node."""
         params = params or {}
         if action in self.action_handlers:

@@ -50,7 +50,9 @@ SCENARIOS: Dict[str, ScenarioDefinition] = {
     "sve2_underutilization": ScenarioDefinition(
         name="sve2_underutilization",
         title="SVE2 PMU Underutilization & GEMM Bottleneck",
-        description="Sub-optimal FP16 GEMM kernel execution causing SVE2 pipeline stalls and TTFT spikes.",
+        description=(
+            "Sub-optimal FP16 GEMM kernel execution causing SVE2 pipeline stalls and TTFT spikes."
+        ),
         target_node="node-002",
         expected_action="trigger_requantize",
         initial_sve2_pct=29.0,
@@ -61,7 +63,10 @@ SCENARIOS: Dict[str, ScenarioDefinition] = {
     "kv_eviction_flood": ScenarioDefinition(
         name="kv_eviction_flood",
         title="KV Cache Eviction Flood & DRAM Saturation",
-        description="High concurrent request burst causing excessive KV cache eviction and DRAM bandwidth saturation.",
+        description=(
+            "High concurrent request burst causing excessive KV cache eviction "
+            "and DRAM bandwidth saturation."
+        ),
         target_node="node-001",
         expected_action="rebalance_kv_load",
         initial_sve2_pct=91.5,
@@ -72,7 +77,10 @@ SCENARIOS: Dict[str, ScenarioDefinition] = {
     "thermal_throttling": ScenarioDefinition(
         name="thermal_throttling",
         title="Graviton4 Thermal Throttling & Clock Truncation",
-        description="Core overheating leading to dynamic CPU clock scaling and inference latency degradation.",
+        description=(
+            "Core overheating leading to dynamic CPU clock scaling and "
+            "inference latency degradation."
+        ),
         target_node="node-003",
         expected_action="migrate_workload",
         initial_sve2_pct=45.0,
@@ -83,7 +91,10 @@ SCENARIOS: Dict[str, ScenarioDefinition] = {
     "memory_leak_degradation": ScenarioDefinition(
         name="memory_leak_degradation",
         title="vLLM Worker Memory Leak & Swap Thrashing",
-        description="Progressive memory leak in vLLM attention buffers causing virtual memory swap thrashing.",
+        description=(
+            "Progressive memory leak in vLLM attention buffers causing virtual "
+            "memory swap thrashing."
+        ),
         target_node="node-002",
         expected_action="restart_worker",
         initial_sve2_pct=15.0,
@@ -94,7 +105,10 @@ SCENARIOS: Dict[str, ScenarioDefinition] = {
     "network_partition_latency": ScenarioDefinition(
         name="network_partition_latency",
         title="Inter-Node Network Partition & Packet Drops",
-        description="High packet loss on tensor-parallel interconnect causing distributed consensus timeouts.",
+        description=(
+            "High packet loss on tensor-parallel interconnect causing "
+            "distributed consensus timeouts."
+        ),
         target_node="node-001",
         expected_action="isolate_node",
         initial_sve2_pct=10.0,

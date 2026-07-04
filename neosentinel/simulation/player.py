@@ -38,7 +38,10 @@ def run_simulation(
             "timestamp": "2026-07-04T14:00:02Z",
             "decision_id": f"dec-{scenario.name}",
             "node_id": scenario.target_node,
-            "chunk": f"Anomaly detected on {scenario.target_node}: {scenario.description}. Executing {scenario.expected_action}.",
+            "chunk": (
+                f"Anomaly detected on {scenario.target_node}: "
+                f"{scenario.description}. Executing {scenario.expected_action}."
+            ),
             "done": True,
         },
         {
@@ -88,7 +91,7 @@ def inject_anomaly(node_id: str, anomaly_type: str) -> Dict[str, Any]:
     """Inject synthetic degradation on a target cluster node."""
     if not node_id:
         raise ValueError("Target node_id must be specified.")
-    
+
     return {
         "status": "injected",
         "node_id": node_id,
@@ -102,17 +105,17 @@ def replay_stream(stream_name: str, speed: float = 1.0) -> List[Dict[str, Any]]:
     """Replay historical telemetry stream window at N× speed."""
     if speed <= 0:
         raise ValueError("Speed multiplier must be positive.")
-        
+
     mock_stream = [
         {"id": "1001", "type": "metrics", "data": "nominal"},
         {"id": "1002", "type": "metrics", "data": "spike_detected"},
         {"id": "1003", "type": "healing", "data": "action_triggered"},
     ]
-    
+
     delay = 0.05 / speed
     replayed = []
     for item in mock_stream:
         time.sleep(delay)
         replayed.append(item)
-        
+
     return replayed

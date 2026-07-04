@@ -2,7 +2,7 @@
 
 import pytest
 
-from neosentinel.simulation.catalog import get_scenario, list_scenarios, SCENARIOS
+from neosentinel.simulation.catalog import get_scenario, list_scenarios
 
 
 def test_list_scenarios() -> None:

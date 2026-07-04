@@ -1,4 +1,3 @@
-import os
 import webbrowser
 from typing import Any, Dict
 
@@ -83,7 +82,11 @@ def simulate(scenario: str, speed: float) -> None:
 
     try:
         res = run_simulation(scenario, speed=speed, callback=progress_cb)
-        click.echo(f"[SUCCESS] Simulation finished: {res['action_taken']} executed on {res['target_node']}.")
+        msg = (
+            f"[SUCCESS] Simulation finished: {res['action_taken']} "
+            f"executed on {res['target_node']}."
+        )
+        click.echo(msg)
     except Exception as e:
         click.echo(f"[ERROR] Simulation failed: {e}", err=True)
         raise click.Abort()

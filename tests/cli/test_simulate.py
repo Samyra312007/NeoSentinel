@@ -13,7 +13,7 @@ def test_simulate_all_scenarios(scenario_dict: dict) -> None:
     runner = CliRunner()
     scenario_name = scenario_dict["name"]
     result = runner.invoke(cli, ["simulate", "--scenario", scenario_name, "--speed", "10.0"])
-    
+
     assert result.exit_code == 0, f"Simulation failed for {scenario_name}: {result.output}"
     assert "Starting simulation scenario" in result.output
     assert "[AGENT THOUGHT]" in result.output

@@ -2,7 +2,6 @@
 
 import importlib
 import importlib.metadata
-import pytest
 
 
 def test_package_metadata() -> None:
@@ -13,7 +12,8 @@ def test_package_metadata() -> None:
 
 def test_sdk_export() -> None:
     """Verify that core SDK symbols are available from neosentinel.engine."""
-    from neosentinel.engine import SentinelEngine, PerformixTarget, ClusterConfig
+    from neosentinel.engine import ClusterConfig, PerformixTarget, SentinelEngine
+
     assert SentinelEngine is not None
     assert PerformixTarget is not None
     assert ClusterConfig is not None
@@ -22,5 +22,6 @@ def test_sdk_export() -> None:
 def test_cli_entry_point() -> None:
     """Verify CLI main entry point is callable."""
     from neosentinel.cli.main import cli
+
     assert cli is not None
     assert callable(cli)

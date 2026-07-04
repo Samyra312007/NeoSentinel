@@ -1,6 +1,7 @@
 """CLI unit tests for rollback and report commands (D5.4)."""
 
 import os
+
 from click.testing import CliRunner
 
 from neosentinel.cli.main import cli
@@ -9,7 +10,8 @@ from neosentinel.cli.main import cli
 def test_rollback_command() -> None:
     """Verify node rollback to specified checkpoint."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["rollback", "--node", "node-001", "--checkpoint", "chk-graviton4-991"])
+    args = ["rollback", "--node", "node-001", "--checkpoint", "chk-graviton4-991"]
+    result = runner.invoke(cli, args)
     assert result.exit_code == 0
     assert "restored to 'chk-graviton4-991'" in result.output
 
