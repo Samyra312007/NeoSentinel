@@ -6,9 +6,11 @@ from typing import Any
 import redis
 from redis.cluster import RedisCluster
 
+from neosentinel.contracts.decision import SentinelDecision
 from neosentinel.contracts.streams import (
     ALL_STREAMS,
     CONSUMER_GROUPS,
+    STREAM_DECISIONS,
     STREAM_PMU,
     STREAM_RETENTION_MS,
     STREAM_VLLM,
@@ -59,6 +61,32 @@ class TelemetryPipeline:
             minid=self._minid(),
             approximate=True,
         )
+
+    def publish_decision(self, decision: SentinelDecision) -> str:
+        import json
+
+        fields = {
+            "decision_id": decision.decision_id,
+            "cluster_id": decision.cluster_id,
+            "node_id": decision.node_id,
+            "timestamp": decision.timestamp.isoformat(),
+            "action": decision.action.value,
+            "confidence": str(decision.confidence),
+            "reasoning": decision.reasoning,
+            "parameters_json": json.dumps(decision.parameters, separators=(",", ":")),
+            "snapshot_hash": decision.snapshot_hash,
+            "quorum_required": "true" if decision.quorum_required else "false",
+        }
+        return self._client.xadd(
+            STREAM_DECISIONS,
+            fields,
+            minid=self._minid(),
+            approximate=True,
+        )
+
+    def read_decisions(self, *, count: int = 10) -> list[tuple[str, dict[str, str]]]:
+        entries = self._client.xrevrange(STREAM_DECISIONS, "+", "-", count=count)
+        return [(entry_id, dict(fields)) for entry_id, fields in entries]
 
     def publish_fields(self, stream: str, fields: dict[str, str]) -> str:
         return self._client.xadd(

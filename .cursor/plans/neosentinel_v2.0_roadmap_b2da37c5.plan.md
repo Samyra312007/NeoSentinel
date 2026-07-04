@@ -19,7 +19,7 @@ todos:
     status: pending
   - id: sahil-w3-agent
     content: "Week 3 (Sahil): Pydantic schemas, llama.cpp agent brain, grammar decode, 30s decision loop + tests"
-    status: pending
+    status: completed
   - id: divyansh-w3-agent-ui
     content: "Week 3 (Divyansh): Agent Thought stream, D3 flame graph, healing/audit panels, scenario fixtures"
     status: pending
@@ -57,7 +57,7 @@ isProject: false
 | Week 0 | 🔄 In progress | 16/17 deliverables |
 | Week 1 | 🔄 In progress | 5/10 deliverables |
 | Week 2 | 🔄 In progress | 5/10 |
-| Week 3 | ⬜ Not started | 0/10 |
+| Week 3 | 🔄 In progress | 5/10 |
 | Week 4 | ⬜ Not started | 0/11 |
 | Week 5 | ⬜ Not started | 0/11 |
 | Week 6 | ⬜ Not started | 0/10 |
@@ -220,11 +220,11 @@ Joint deliverables before parallel work begins:
 
 | Task                            | Deliverables                                                                                             | Tests                                                                                    |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| [ ] S3.1 Pydantic schemas impl      | [`neosentinel/schemas/`](neosentinel/schemas/) — full `SentinelDecision`, grammar JSON schema export     | `tests/unit/test_schema_validation.py` — 100% valid/invalid cases                        |
-| [ ] S3.2 llama.cpp agent runtime    | [`neosentinel/agent/brain.py`](neosentinel/agent/brain.py) — Llama 3.2 3B INT4, KleidiAI, <5% CPU budget | `tests/unit/test_brain_mock_llm.py` — mock llama.cpp responses                           |
-| [ ] S3.3 Grammar-constrained decode | instructor + llama.cpp grammar mode — impossible action types rejected                                   | `tests/unit/test_grammar_constraints.py` — 1000 generated decisions, 0 schema violations |
-| [ ] S3.4 30s decision loop          | Read snapshot from Redis → decide → publish to `:decisions` stream                                       | `tests/integration/test_decision_loop.py`                                                |
-| [ ] S3.5 Decision tree logic        | TTFT/SVE2/DRAM/KV eviction branching per spec                                                            | `tests/unit/test_decision_tree.py` — parameterized scenarios                             |
+| [x] S3.1 Pydantic schemas impl      | [`neosentinel/schemas/`](neosentinel/schemas/) — full `SentinelDecision`, grammar JSON schema export     | `tests/unit/test_schema_validation.py` — 100% valid/invalid cases                        |
+| [x] S3.2 llama.cpp agent runtime    | [`neosentinel/agent/brain.py`](neosentinel/agent/brain.py) — Llama 3.2 3B INT4, KleidiAI, <5% CPU budget | `tests/unit/test_brain_mock_llm.py` — mock llama.cpp responses                           |
+| [x] S3.3 Grammar-constrained decode | instructor + llama.cpp grammar mode — impossible action types rejected                                   | `tests/unit/test_grammar_constraints.py` — 1000 generated decisions, 0 schema violations |
+| [x] S3.4 30s decision loop          | Read snapshot from Redis → decide → publish to `:decisions` stream                                       | `tests/integration/test_decision_loop.py`                                                |
+| [x] S3.5 Decision tree logic        | TTFT/SVE2/DRAM/KV eviction branching per spec                                                            | `tests/unit/test_decision_tree.py` — parameterized scenarios                             |
 
 ### Divyansh — Agent Thought & Flame Graph UI
 
