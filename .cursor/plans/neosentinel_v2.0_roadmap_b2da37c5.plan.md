@@ -10,7 +10,7 @@ todos:
     status: pending
   - id: divyansh-w1-shell
     content: "Week 1 (Divyansh): CLI skeleton, FastAPI/WS server, React bootstrap, mock telemetry feed + tests"
-    status: pending
+    status: completed
   - id: sahil-w2-streams
     content: "Week 2 (Sahil): Redis Cluster, TelemetryPipeline (4 streams), vLLM scraper, pipeline integration tests"
     status: pending
@@ -178,11 +178,11 @@ Joint deliverables before parallel work begins:
 
 | Task                          | Deliverables                                                                                                                                                                   | Tests                                                  |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| [ ] D1.1 Click CLI skeleton       | [`neosentinel/cli/main.py`](neosentinel/cli/main.py) — `init`, `cluster-init`, `start`, `doctor` command stubs                                                                 | `tests/cli/test_cli_help.py` — all commands registered |
-| [ ] D1.2 FastAPI dashboard server | [`neosentinel/dashboard/server.py`](neosentinel/dashboard/server.py) — health route, WS endpoint stub on `:8080`                                                               | `tests/dashboard/test_server_health.py`                |
-| [ ] D1.3 React app bootstrap      | [`dashboard-ui/`](dashboard-ui/) — Vite + React + TypeScript + Tailwind, WebSocket client hook                                                                                 | `dashboard-ui/src/__tests__/App.test.tsx`              |
-| [ ] D1.4 Mock telemetry feed      | [`neosentinel/dashboard/mock_feed.py`](neosentinel/dashboard/mock_feed.py) — emits contract-valid WS events from JSON fixtures in [`scenarios/fixtures/`](scenarios/fixtures/) | `tests/dashboard/test_mock_feed.py`                    |
-| [ ] D1.5 Auto-open browser        | Hook in `start` command stub — opens `http://localhost:8080`                                                                                                                   | `tests/cli/test_browser_open.py` (mock `webbrowser`)   |
+| [x] D1.1 Click CLI skeleton       | [`neosentinel/cli/main.py`](neosentinel/cli/main.py) — `init`, `cluster-init`, `start`, `doctor` command stubs                                                                 | `tests/cli/test_cli_help.py` — all commands registered |
+| [x] D1.2 FastAPI dashboard server | [`neosentinel/dashboard/server.py`](neosentinel/dashboard/server.py) — health route, WS endpoint stub on `:8080`                                                               | `tests/dashboard/test_server_health.py`                |
+| [x] D1.3 React app bootstrap      | [`dashboard-ui/`](dashboard-ui/) — Vite + React + TypeScript + Tailwind, WebSocket client hook                                                                                 | `dashboard-ui/src/__tests__/App.test.tsx`              |
+| [x] D1.4 Mock telemetry feed      | [`neosentinel/dashboard/mock_feed.py`](neosentinel/dashboard/mock_feed.py) — emits contract-valid WS events from JSON fixtures in [`scenarios/fixtures/`](scenarios/fixtures/) | `tests/dashboard/test_mock_feed.py`                    |
+| [x] D1.5 Auto-open browser        | Hook in `start` command stub — opens `http://localhost:8080`                                                                                                                   | `tests/cli/test_browser_open.py` (mock `webbrowser`)   |
 
 **Week 1 exit:** `docker compose up` runs 3 vLLM backends + Traefik on one node; dashboard loads with mock data; CI green.
 
@@ -204,11 +204,11 @@ Joint deliverables before parallel work begins:
 
 | Task                          | Deliverables                                                                                                                 | Tests                                               |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| [ ] D2.1 Cluster status panel     | 3-node green/yellow/red cards, requests/min                                                                                  | `dashboard-ui/src/__tests__/ClusterStatus.test.tsx` |
-| [ ] D2.2 Real-time metrics gauges | TTFT P99, tokens/sec, SVE2 %, DRAM BW % per node                                                                             | `dashboard-ui/src/__tests__/MetricsGauges.test.tsx` |
-| [ ] D2.3 WebSocket broadcaster    | [`neosentinel/dashboard/broadcaster.py`](neosentinel/dashboard/broadcaster.py) — reads from mock feed OR Redis (config flag) | `tests/dashboard/test_broadcaster.py`               |
-| [ ] D2.4 WS → React wiring        | Live updates <50ms target (measure in test with mock)                                                                        | `tests/dashboard/test_ws_latency.py`                |
-| [ ] D2.5 Layout shell             | Full dashboard grid matching spec ASCII mockup                                                                               | Visual snapshot test optional                       |
+| [x] D2.1 Cluster status panel     | 3-node green/yellow/red cards, requests/min                                                                                  | `dashboard-ui/src/__tests__/ClusterStatus.test.tsx` |
+| [x] D2.2 Real-time metrics gauges | TTFT P99, tokens/sec, SVE2 %, DRAM BW % per node                                                                             | `dashboard-ui/src/__tests__/MetricsGauges.test.tsx` |
+| [x] D2.3 WebSocket broadcaster    | [`neosentinel/dashboard/broadcaster.py`](neosentinel/dashboard/broadcaster.py) — reads from mock feed OR Redis (config flag) | `tests/dashboard/test_broadcaster.py`               |
+| [x] D2.4 WS → React wiring        | Live updates <50ms target (measure in test with mock)                                                                        | `tests/dashboard/test_ws_latency.py`                |
+| [x] D2.5 Layout shell             | Full dashboard grid matching spec ASCII mockup                                                                               | Visual snapshot test optional                       |
 
 **Week 2 exit:** Sahil's pipeline fills Redis on a single node; Divyansh's dashboard renders live mock stream; both test suites independent.
 

@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * "Data desk" theme — a financial-terminal look: flat near-black, amber + cyan,
+ * monospace, sharp edges, no shadows or gradients. Tokens are space-separated
+ * RGB channels so Tailwind's `<alpha-value>` (e.g. bg-line/60) works everywhere.
+ * `.dark` is the primary experience; :root is a light "paper terminal" variant.
+ */
+:root {
+  --c-bg: 250 250 247; /* warm paper   */
+  --c-surface: 255 255 255;
+  --c-surface-2: 243 243 239;
+  --c-line: 214 214 206; /* hairline grid */
+  --c-text: 22 22 24; /* near-black   */
+  --c-muted: 92 94 100;
+  --c-subtle: 150 152 158;
+  --c-brand: 180 83 9; /* amber-700    */
+  --c-accent: 14 116 144; /* cyan-700     */
+
+  color-scheme: light;
+}
+
+.dark {
+  --c-bg: 6 7 9; /* #060709 near-black */
+  --c-surface: 13 15 18; /* panel bg           */
+  --c-surface-2: 22 25 30; /* row hover / strip  */
+  --c-line: 38 42 49; /* #262A31 grid line  */
+  --c-text: 220 223 228; /* value white        */
+  --c-muted: 128 134 145;
+  --c-subtle: 84 90 101;
+  --c-brand: 245 166 35; /* #F5A623 amber      */
+  --c-accent: 45 212 238; /* #2DD4EE cyan       */
+
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: theme('fontFamily.mono');
+  font-size: 13px;
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular numerals keep dense, changing metrics from jittering. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* Slim, theme-aware scrollbars for the data panels. */
+.scroll-slim {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--c-line)) transparent;
+}
+.scroll-slim::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--c-line));
+}
+.scroll-slim::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--c-subtle));
+}
