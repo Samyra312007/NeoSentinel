@@ -1,0 +1,52 @@
+name: E2E Simulation & Dashboard Smoke Test
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  e2e-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: ./dashboard-ui/package-lock.json
+
+      - name: Install Python dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Install Node.js dependencies & Build Dashboard
+        run: |
+          cd dashboard-ui
+          npm ci
+          npm run build
+
+      - name: Start Backend Telemetry Broadcaster
+        run: |
+          uvicorn neosentinel.dashboard.server:app --host 127.0.0.1 --port 8080 &
+          sleep 3
+          curl --retry 5 --retry-delay 2 --retry-connrefused -f http://127.0.0.1:8080/health | grep healthy
+
+      - name: Start Vite Preview Server
+        run: |
+          cd dashboard-ui
+          npm run preview -- --host 127.0.0.1 --port 5173 &
+          sleep 3
+          curl --retry 5 --retry-delay 2 --retry-connrefused -f http://127.0.0.1:5173/ | grep -i "NeoSentinel"
+
+      - name: Verify CLI command simulation readiness
+        run: neosentinel --help
