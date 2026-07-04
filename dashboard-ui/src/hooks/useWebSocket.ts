@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import type { WebSocketEvent } from '../types/telemetry';
 
-export interface UseWebSocketReturn<T = any> {
+export interface UseWebSocketReturn<T = WebSocketEvent> {
   connected: boolean;
   error: string | null;
   lastMessage: T | null;
@@ -8,7 +9,7 @@ export interface UseWebSocketReturn<T = any> {
   sendMessage: (message: string) => void;
 }
 
-export function useWebSocket<T = any>(url: string = 'ws://localhost:8080/ws'): UseWebSocketReturn<T> {
+export function useWebSocket<T = WebSocketEvent>(url: string = 'ws://localhost:8080/ws'): UseWebSocketReturn<T> {
   const [connected, setConnected] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [lastMessage, setLastMessage] = useState<T | null>(null);
