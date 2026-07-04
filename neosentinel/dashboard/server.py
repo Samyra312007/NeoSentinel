@@ -1,8 +1,7 @@
-import asyncio
-import json
-from typing import Any
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+
+from neosentinel.dashboard.broadcaster import TelemetryBroadcaster
 
 app = FastAPI(title="NeoSentinel Dashboard API", version="1.0.0")
 
@@ -20,8 +19,6 @@ async def health_check() -> dict[str, str]:
     """Dashboard liveness probe."""
     return {"status": "healthy", "service": "dashboard"}
 
-
-from neosentinel.dashboard.broadcaster import TelemetryBroadcaster
 
 broadcaster = TelemetryBroadcaster(use_redis=False)
 

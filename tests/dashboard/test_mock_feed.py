@@ -1,4 +1,5 @@
 import pytest
+
 from neosentinel.dashboard.mock_feed import MockTelemetryFeed
 
 

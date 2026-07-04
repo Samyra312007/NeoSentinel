@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, AsyncGenerator
 
 from pydantic import TypeAdapter
+
 from neosentinel.contracts.websocket import WebSocketEvent
 
 FIXTURES_DIR = Path(__file__).resolve().parent.parent.parent / "scenarios" / "fixtures"

@@ -1,7 +1,9 @@
 import asyncio
 import logging
 from typing import Any
+
 from fastapi import WebSocket, WebSocketDisconnect
+
 from neosentinel.dashboard.mock_feed import MockTelemetryFeed
 
 logger = logging.getLogger(__name__)

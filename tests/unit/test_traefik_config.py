@@ -1,4 +1,3 @@
-
 import yaml
 
 from tests.conftest import COMPOSE_FILE, TRAEFIK_DYNAMIC, TRAEFIK_STATIC

@@ -1,5 +1,7 @@
 from unittest.mock import patch
+
 from click.testing import CliRunner
+
 from neosentinel.cli.main import cli
 
 

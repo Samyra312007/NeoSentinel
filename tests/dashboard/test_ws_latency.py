@@ -1,8 +1,9 @@
-import asyncio
 import time
-import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 from fastapi import WebSocket
+
 from neosentinel.dashboard.broadcaster import TelemetryBroadcaster
 
 
@@ -11,7 +12,6 @@ async def test_websocket_broadcast_latency_under_50ms() -> None:
     """Verify that broadcasting telemetry events to clients completes in <50ms target latency."""
     broadcaster = TelemetryBroadcaster()
     num_clients = 10
-    clients: list[MagicMock] = []
 
     received_timestamps: list[float] = []
 
@@ -44,6 +44,6 @@ async def test_websocket_broadcast_latency_under_50ms() -> None:
     # Check each client received the message in under 50ms from start_time
     for idx, ts in enumerate(received_timestamps):
         client_latency_ms = (ts - start_time) * 1000
-        assert (
-            client_latency_ms < 50.0
-        ), f"Client {idx} delivery latency exceeded 50ms: {client_latency_ms:.2f}ms"
+        assert client_latency_ms < 50.0, (
+            f"Client {idx} delivery latency exceeded 50ms: {client_latency_ms:.2f}ms"
+        )

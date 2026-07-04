@@ -1,7 +1,9 @@
 import asyncio
-import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 from fastapi import WebSocket, WebSocketDisconnect
+
 from neosentinel.dashboard.broadcaster import TelemetryBroadcaster
 
 
@@ -83,5 +85,7 @@ async def test_start_and_stop_streaming_mock() -> None:
 async def test_start_streaming_redis_error() -> None:
     broadcaster = TelemetryBroadcaster(use_redis=True, redis_url="redis://invalid-host:12345")
     broadcaster._running = True
-    with pytest.raises(RuntimeError, match="Failed to connect to Redis|Redis module is not installed"):
+    with pytest.raises(
+        RuntimeError, match="Failed to connect to Redis|Redis module is not installed"
+    ):
         await broadcaster._stream_from_redis()
