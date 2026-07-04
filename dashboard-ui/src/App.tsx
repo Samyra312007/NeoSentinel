@@ -6,7 +6,12 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { StatCard } from './components/StatCard';
 import { NodesTable } from './components/NodesTable';
 import { EventsTable } from './components/EventsTable';
+import { AgentThought } from './components/AgentThought';
+import { FlameGraph } from './components/FlameGraph';
+import { HealingFeed } from './components/HealingFeed';
+import { AuditLog } from './components/AuditLog';
 import { average, formatClock, formatNumber, latestMetrics } from './lib/telemetry';
+import type { AgentThoughtEvent, AuditEvent, FlameGraphEvent, HealingEvent } from './types/telemetry';
 
 function PanelHeader({ id, title, meta }: { id: string; title: string; meta: string }) {
   return (
@@ -44,6 +49,23 @@ function App() {
       avgSve2: average(nodes.map((n) => n.sve2_utilization_pct)),
     };
   }, [metrics]);
+
+  const agentThoughts = useMemo(
+    () => messages.filter((m): m is AgentThoughtEvent => m.type === 'agent_thought'),
+    [messages]
+  );
+  const flameGraphs = useMemo(
+    () => messages.filter((m): m is FlameGraphEvent => m.type === 'flame_graph'),
+    [messages]
+  );
+  const healingEvents = useMemo(
+    () => messages.filter((m): m is HealingEvent => m.type === 'healing'),
+    [messages]
+  );
+  const auditEvents = useMemo(
+    () => messages.filter((m): m is AuditEvent => m.type === 'audit'),
+    [messages]
+  );
 
   const nodes = metrics?.nodes ?? [];
   const hasNodes = nodes.length > 0;
@@ -96,6 +118,33 @@ function App() {
         <PanelHeader id="nodes" title="Nodes" meta={`${summary.total} monitored`} />
         <NodesTable nodes={nodes} />
       </section>
+
+      {/* S3.2 FLAME GRAPH & S3.1 AGENT THOUGHTS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-line border-b border-line">
+        <section aria-labelledby="flame">
+          <PanelHeader id="flame" title="Performance Hotspots" meta="SVE2 PMU" />
+          <FlameGraph
+            node_id={flameGraphs.length > 0 ? flameGraphs[flameGraphs.length - 1].node_id : undefined}
+            hotspots={flameGraphs.length > 0 ? flameGraphs[flameGraphs.length - 1].hotspots : []}
+          />
+        </section>
+        <section aria-labelledby="brain">
+          <PanelHeader id="brain" title="Autonomous Agent Reasoning" meta="Llama-3.2-70B" />
+          <AgentThought thoughts={agentThoughts} />
+        </section>
+      </div>
+
+      {/* S3.3 HEALING FEED & S3.4 AUDIT LOG */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-line border-b border-line">
+        <section aria-labelledby="healing">
+          <PanelHeader id="healing" title="Autonomous Recovery Feed" meta="closed-loop" />
+          <HealingFeed events={healingEvents} />
+        </section>
+        <section aria-labelledby="audit">
+          <PanelHeader id="audit" title="GitOps Audit Log" meta="immutable trail" />
+          <AuditLog events={auditEvents} />
+        </section>
+      </div>
 
       {/* DECISION STREAM */}
       <section aria-labelledby="stream">
