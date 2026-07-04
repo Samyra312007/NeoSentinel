@@ -25,7 +25,7 @@ todos:
     status: pending
   - id: sahil-w4-actions
     content: "Week 4 (Sahil): 6 MCP action tools, checkpoints, GitOps audit, auto-rollback + tests"
-    status: pending
+    status: completed
   - id: divyansh-w4-sim
     content: "Week 4 (Divyansh): simulate/inject/replay CLI, 5 scenarios, offline demo e2e tests"
     status: pending
@@ -58,7 +58,7 @@ isProject: false
 | Week 1 | 🔄 In progress | 5/10 deliverables |
 | Week 2 | 🔄 In progress | 5/10 |
 | Week 3 | 🔄 In progress | 5/10 |
-| Week 4 | ⬜ Not started | 0/11 |
+| Week 4 | 🔄 In progress | 6/11 |
 | Week 5 | ⬜ Not started | 0/11 |
 | Week 6 | ⬜ Not started | 0/10 |
 | Week 7 | ⬜ Not started | 0/10 |
@@ -246,12 +246,12 @@ Joint deliverables before parallel work begins:
 
 | Task                          | Deliverables                                                                                                                                                                        | Tests                                                |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| [ ] S4.1 Six MCP action tools     | [`neosentinel/actions/`](neosentinel/actions/) — `arm_performix_analyze`, `adjust_vllm_config`, `scale_worker_threads`, `trigger_requantize`, `send_alert`, `rollback_optimization` | `tests/unit/test_each_action.py` — one file per tool |
-| [ ] S4.2 Performix recipes        | Code Hotspots + Memory Bandwidth wrappers                                                                                                                                           | `tests/unit/test_performix_recipes.py`               |
-| [ ] S4.3 Checkpoint system        | [`neosentinel/audit/checkpoints.py`](neosentinel/audit/checkpoints.py) — snapshot before every heal                                                                                 | `tests/unit/test_checkpoint_create.py`               |
-| [ ] S4.4 GitOps audit             | [`neosentinel/audit/gitops.py`](neosentinel/audit/gitops.py) — GitPython commits with before/after JSON                                                                             | `tests/unit/test_gitops_commit.py` — temp git repo   |
-| [ ] S4.5 Auto-rollback            | If metrics worsen within 90s, restore checkpoint                                                                                                                                    | `tests/integration/test_auto_rollback.py`            |
-| [ ] S4.6 Healing stream publisher | Post-action metrics → `:healing` stream                                                                                                                                             | `tests/integration/test_healing_publish.py`          |
+| [x] S4.1 Six MCP action tools     | [`neosentinel/actions/`](neosentinel/actions/) — `arm_performix_analyze`, `adjust_vllm_config`, `scale_worker_threads`, `trigger_requantize`, `send_alert`, `rollback_optimization` | `tests/unit/test_action_*.py` — one file per tool |
+| [x] S4.2 Performix recipes        | Code Hotspots + Memory Bandwidth wrappers                                                                                                                                           | `tests/unit/test_performix_recipes.py`               |
+| [x] S4.3 Checkpoint system        | [`neosentinel/audit/checkpoints.py`](neosentinel/audit/checkpoints.py) — snapshot before every heal                                                                                 | `tests/unit/test_checkpoint_create.py`               |
+| [x] S4.4 GitOps audit             | [`neosentinel/audit/gitops.py`](neosentinel/audit/gitops.py) — GitPython commits with before/after JSON                                                                             | `tests/unit/test_gitops_commit.py` — temp git repo   |
+| [x] S4.5 Auto-rollback            | If metrics worsen within 90s, restore checkpoint                                                                                                                                    | `tests/integration/test_auto_rollback.py`            |
+| [x] S4.6 Healing stream publisher | Post-action metrics → `:healing` stream                                                                                                                                             | `tests/integration/test_healing_publish.py`          |
 
 ### Divyansh — Simulation & Inject CLI
 

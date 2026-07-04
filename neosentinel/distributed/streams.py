@@ -6,11 +6,13 @@ from typing import Any
 import redis
 from redis.cluster import RedisCluster
 
+from neosentinel.actions.base import ActionResult
 from neosentinel.contracts.decision import SentinelDecision
 from neosentinel.contracts.streams import (
     ALL_STREAMS,
     CONSUMER_GROUPS,
     STREAM_DECISIONS,
+    STREAM_HEALING,
     STREAM_PMU,
     STREAM_RETENTION_MS,
     STREAM_VLLM,
@@ -86,6 +88,42 @@ class TelemetryPipeline:
 
     def read_decisions(self, *, count: int = 10) -> list[tuple[str, dict[str, str]]]:
         entries = self._client.xrevrange(STREAM_DECISIONS, "+", "-", count=count)
+        return [(entry_id, dict(fields)) for entry_id, fields in entries]
+
+    def publish_healing(
+        self,
+        *,
+        decision_id: str,
+        result: ActionResult,
+        checkpoint_id: str,
+        status: str,
+    ) -> str:
+        import json
+        from datetime import UTC, datetime
+
+        healing_id = f"heal-{datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')}"
+        fields = {
+            "healing_id": healing_id,
+            "decision_id": decision_id,
+            "node_id": result.node_id,
+            "timestamp": datetime.now(UTC).isoformat(),
+            "action": result.action.value,
+            "status": status,
+            "before_json": json.dumps(result.before.model_dump(), separators=(",", ":")),
+            "after_json": json.dumps(result.after.model_dump(), separators=(",", ":")),
+            "duration_ms": str(result.duration_ms),
+            "checkpoint_id": checkpoint_id,
+        }
+        self._client.xadd(
+            STREAM_HEALING,
+            fields,
+            minid=self._minid(),
+            approximate=True,
+        )
+        return healing_id
+
+    def read_healing(self, *, count: int = 10) -> list[tuple[str, dict[str, str]]]:
+        entries = self._client.xrevrange(STREAM_HEALING, "+", "-", count=count)
         return [(entry_id, dict(fields)) for entry_id, fields in entries]
 
     def publish_fields(self, stream: str, fields: dict[str, str]) -> str:
