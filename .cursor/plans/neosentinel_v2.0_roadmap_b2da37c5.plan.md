@@ -308,11 +308,11 @@ Each owner hardens their track; still no cross-dependency.
 
 ### Divyansh — Experience Hardening
 
-- [ ] Dashboard WebSocket lag benchmarks (<50ms)
-- [ ] CLI UX polish, error messages, progress bars for `cluster-init`
-- [ ] Accessibility pass on dashboard
-- [ ] E2E Playwright tests for full simulate demo flow
-- [ ] GitHub Actions: test matrix (ubuntu ARM64 + x64), publish workflow (dry-run)
+- [x] Dashboard WebSocket lag benchmarks (<50ms)
+- [x] CLI UX polish, error messages, progress bars for `cluster-init`
+- [x] Accessibility pass on dashboard
+- [x] E2E Playwright tests for full simulate demo flow
+- [x] GitHub Actions: test matrix (ubuntu ARM64 + x64), publish workflow (dry-run)
 
 **Week 6 exit:** Both tracks production-ready independently; all unit/integration tests green.
 

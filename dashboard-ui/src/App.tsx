@@ -71,7 +71,7 @@ function App() {
   const hasNodes = nodes.length > 0;
 
   return (
-    <div className="min-h-screen bg-bg font-mono text-content">
+    <div className="min-h-screen bg-bg font-mono text-content" role="main" aria-label="NeoSentinel Control Plane Dashboard">
       {/* STATUS LINE */}
       <header className="sticky top-0 z-20 flex h-9 items-center gap-2 border-b border-line bg-surface px-3">
         <h1 className="shrink-0 text-[12px] font-bold tracking-[0.25em] text-brand">NEOSENTINEL</h1>
