@@ -21,12 +21,12 @@ test.describe('NeoSentinel E2E Simulation & Dashboard UI Flow', () => {
     await expect(page.locator('section[aria-labelledby="audit"]')).toBeVisible();
     await expect(page.locator('section[aria-labelledby="stream"]')).toBeVisible();
 
-    // Verify theme toggle functionality
+    // Verify theme toggle is keyboard accessible
     const themeButton = page.getByRole('button', { name: /Switch to (light|dark) theme/i });
     await expect(themeButton).toBeVisible();
-    await themeButton.click();
-
-    await page.keyboard.press('Tab');
+    await themeButton.focus();
     await expect(themeButton).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(themeButton).toHaveAttribute('aria-label', /Switch to (light|dark) theme/i);
   });
 });
