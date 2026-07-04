@@ -10,7 +10,7 @@ todos:
     status: pending
   - id: divyansh-w1-shell
     content: "Week 1 (Divyansh): CLI skeleton, FastAPI/WS server, React bootstrap, mock telemetry feed + tests"
-    status: pending
+    status: completed
   - id: sahil-w2-streams
     content: "Week 2 (Sahil): Redis Cluster, TelemetryPipeline (4 streams), vLLM scraper, pipeline integration tests"
     status: pending
@@ -178,11 +178,11 @@ Joint deliverables before parallel work begins:
 
 | Task                          | Deliverables                                                                                                                                                                   | Tests                                                  |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| [ ] D1.1 Click CLI skeleton       | [`neosentinel/cli/main.py`](neosentinel/cli/main.py) — `init`, `cluster-init`, `start`, `doctor` command stubs                                                                 | `tests/cli/test_cli_help.py` — all commands registered |
-| [ ] D1.2 FastAPI dashboard server | [`neosentinel/dashboard/server.py`](neosentinel/dashboard/server.py) — health route, WS endpoint stub on `:8080`                                                               | `tests/dashboard/test_server_health.py`                |
-| [ ] D1.3 React app bootstrap      | [`dashboard-ui/`](dashboard-ui/) — Vite + React + TypeScript + Tailwind, WebSocket client hook                                                                                 | `dashboard-ui/src/__tests__/App.test.tsx`              |
-| [ ] D1.4 Mock telemetry feed      | [`neosentinel/dashboard/mock_feed.py`](neosentinel/dashboard/mock_feed.py) — emits contract-valid WS events from JSON fixtures in [`scenarios/fixtures/`](scenarios/fixtures/) | `tests/dashboard/test_mock_feed.py`                    |
-| [ ] D1.5 Auto-open browser        | Hook in `start` command stub — opens `http://localhost:8080`                                                                                                                   | `tests/cli/test_browser_open.py` (mock `webbrowser`)   |
+| [x] D1.1 Click CLI skeleton       | [`neosentinel/cli/main.py`](neosentinel/cli/main.py) — `init`, `cluster-init`, `start`, `doctor` command stubs                                                                 | `tests/cli/test_cli_help.py` — all commands registered |
+| [x] D1.2 FastAPI dashboard server | [`neosentinel/dashboard/server.py`](neosentinel/dashboard/server.py) — health route, WS endpoint stub on `:8080`                                                               | `tests/dashboard/test_server_health.py`                |
+| [x] D1.3 React app bootstrap      | [`dashboard-ui/`](dashboard-ui/) — Vite + React + TypeScript + Tailwind, WebSocket client hook                                                                                 | `dashboard-ui/src/__tests__/App.test.tsx`              |
+| [x] D1.4 Mock telemetry feed      | [`neosentinel/dashboard/mock_feed.py`](neosentinel/dashboard/mock_feed.py) — emits contract-valid WS events from JSON fixtures in [`scenarios/fixtures/`](scenarios/fixtures/) | `tests/dashboard/test_mock_feed.py`                    |
+| [x] D1.5 Auto-open browser        | Hook in `start` command stub — opens `http://localhost:8080`                                                                                                                   | `tests/cli/test_browser_open.py` (mock `webbrowser`)   |
 
 **Week 1 exit:** `docker compose up` runs 3 vLLM backends + Traefik on one node; dashboard loads with mock data; CI green.
 

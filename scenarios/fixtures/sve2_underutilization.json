@@ -1,0 +1,115 @@
+[
+  {
+    "type": "metrics",
+    "timestamp": "2026-07-04T12:00:00Z",
+    "cluster_id": "cluster-graviton4",
+    "nodes": [
+      {
+        "node_id": "node-001",
+        "status": "healthy",
+        "timestamp": "2026-07-04T12:00:00Z",
+        "ttft_p99_ms": 120.5,
+        "tokens_per_sec": 45.2,
+        "sve2_utilization_pct": 82.1,
+        "dram_bandwidth_pct": 55.0,
+        "cache_miss_rate_pct": 12.3,
+        "kv_eviction_rate": 0.5,
+        "requests_per_min": 350.0,
+        "hotspots": []
+      },
+      {
+        "node_id": "node-002",
+        "status": "degraded",
+        "timestamp": "2026-07-04T12:00:00Z",
+        "ttft_p99_ms": 312.0,
+        "tokens_per_sec": 18.4,
+        "sve2_utilization_pct": 29.0,
+        "dram_bandwidth_pct": 88.5,
+        "cache_miss_rate_pct": 45.0,
+        "kv_eviction_rate": 4.2,
+        "requests_per_min": 340.0,
+        "hotspots": [
+          {
+            "symbol": "unoptimized_gemm_kernel",
+            "samples_pct": 72.5,
+            "module": "vllm_engine"
+          }
+        ]
+      },
+      {
+        "node_id": "node-003",
+        "status": "healthy",
+        "timestamp": "2026-07-04T12:00:00Z",
+        "ttft_p99_ms": 118.0,
+        "tokens_per_sec": 46.0,
+        "sve2_utilization_pct": 80.5,
+        "dram_bandwidth_pct": 54.0,
+        "cache_miss_rate_pct": 11.8,
+        "kv_eviction_rate": 0.4,
+        "requests_per_min": 355.0,
+        "hotspots": []
+      }
+    ]
+  },
+  {
+    "type": "agent_thought",
+    "timestamp": "2026-07-04T12:00:05Z",
+    "decision_id": "dec-001",
+    "node_id": "node-002",
+    "chunk": "SVE2 utilization dropped to 29% on node-002 with high TTFT (312ms). Action required: trigger_requantize.",
+    "done": true
+  },
+  {
+    "type": "flame_graph",
+    "timestamp": "2026-07-04T12:00:06Z",
+    "node_id": "node-002",
+    "hotspots": [
+      {
+        "symbol": "kleidiai_sve2_gemm",
+        "samples_pct": 68.0,
+        "module": "kleidiai"
+      },
+      {
+        "symbol": "paged_attention_kernel",
+        "samples_pct": 22.0,
+        "module": "vllm"
+      }
+    ]
+  },
+  {
+    "type": "healing",
+    "timestamp": "2026-07-04T12:00:10Z",
+    "healing_id": "heal-001",
+    "node_id": "node-002",
+    "action": "trigger_requantize",
+    "status": "success",
+    "before": {
+      "ttft_p99_ms": 312.0,
+      "tokens_per_sec": 18.4,
+      "sve2_utilization_pct": 29.0,
+      "dram_bandwidth_pct": 88.5,
+      "cache_miss_rate_pct": 45.0,
+      "kv_eviction_rate": 4.2,
+      "requests_per_min": 340.0
+    },
+    "after": {
+      "ttft_p99_ms": 131.0,
+      "tokens_per_sec": 44.8,
+      "sve2_utilization_pct": 79.0,
+      "dram_bandwidth_pct": 56.0,
+      "cache_miss_rate_pct": 14.0,
+      "kv_eviction_rate": 0.6,
+      "requests_per_min": 340.0
+    },
+    "duration_ms": 4850
+  },
+  {
+    "type": "audit",
+    "timestamp": "2026-07-04T12:00:11Z",
+    "commit_sha": "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678",
+    "message": "Auto-heal: applied trigger_requantize on node-002 (SVE2 29% -> 79%)",
+    "node_id": "node-002",
+    "action": "trigger_requantize",
+    "checkpoint_id": "chk-node002-20260704120005"
+  }
+]
