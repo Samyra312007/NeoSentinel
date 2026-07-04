@@ -1,0 +1,107 @@
+[
+  {
+    "type": "metrics",
+    "timestamp": "2026-07-04T13:00:00Z",
+    "cluster_id": "cluster-graviton4",
+    "nodes": [
+      {
+        "node_id": "node-001",
+        "status": "degraded",
+        "timestamp": "2026-07-04T13:00:00Z",
+        "ttft_p99_ms": 680.0,
+        "tokens_per_sec": 12.1,
+        "sve2_utilization_pct": 91.5,
+        "dram_bandwidth_pct": 98.0,
+        "cache_miss_rate_pct": 65.4,
+        "kv_eviction_rate": 45.8,
+        "requests_per_min": 850.0,
+        "hotspots": [
+          {
+            "symbol": "paged_attention_v1_kernel",
+            "samples_pct": 64.2,
+            "module": "vllm_attn"
+          },
+          {
+            "symbol": "kv_cache_evict_block",
+            "samples_pct": 28.1,
+            "module": "vllm_core"
+          }
+        ]
+      },
+      {
+        "node_id": "node-002",
+        "status": "healthy",
+        "timestamp": "2026-07-04T13:00:00Z",
+        "ttft_p99_ms": 110.0,
+        "tokens_per_sec": 48.0,
+        "sve2_utilization_pct": 79.0,
+        "dram_bandwidth_pct": 52.0,
+        "cache_miss_rate_pct": 10.2,
+        "kv_eviction_rate": 0.1,
+        "requests_per_min": 320.0,
+        "hotspots": []
+      }
+    ]
+  },
+  {
+    "type": "agent_thought",
+    "timestamp": "2026-07-04T13:00:03Z",
+    "decision_id": "dec-002",
+    "node_id": "node-001",
+    "chunk": "Critical KV cache eviction flood detected (45.8 blocks/s) on node-001. DRAM bandwidth saturated at 98%. Re-balancing request load to node-002.",
+    "done": true
+  },
+  {
+    "type": "flame_graph",
+    "timestamp": "2026-07-04T13:00:04Z",
+    "node_id": "node-001",
+    "hotspots": [
+      {
+        "symbol": "kv_cache_evict_block",
+        "samples_pct": 68.5,
+        "module": "vllm_core"
+      },
+      {
+        "symbol": "paged_attention_v1_kernel",
+        "samples_pct": 24.0,
+        "module": "vllm_attn"
+      }
+    ]
+  },
+  {
+    "type": "healing",
+    "timestamp": "2026-07-04T13:00:08Z",
+    "healing_id": "heal-002",
+    "node_id": "node-001",
+    "action": "rebalance_kv_load",
+    "status": "success",
+    "before": {
+      "ttft_p99_ms": 680.0,
+      "tokens_per_sec": 12.1,
+      "sve2_utilization_pct": 91.5,
+      "dram_bandwidth_pct": 98.0,
+      "cache_miss_rate_pct": 65.4,
+      "kv_eviction_rate": 45.8,
+      "requests_per_min": 850.0
+    },
+    "after": {
+      "ttft_p99_ms": 115.0,
+      "tokens_per_sec": 51.4,
+      "sve2_utilization_pct": 82.0,
+      "dram_bandwidth_pct": 60.0,
+      "cache_miss_rate_pct": 11.0,
+      "kv_eviction_rate": 0.2,
+      "requests_per_min": 425.0
+    },
+    "duration_ms": 3200
+  },
+  {
+    "type": "audit",
+    "timestamp": "2026-07-04T13:00:09Z",
+    "commit_sha": "9f8e7d6c5b4a32109876543210fedcba98765432",
+    "message": "Auto-heal: rebalanced traffic from node-001 to node-002 (KV eviction rate 45.8 -> 0.2)",
+    "node_id": "node-001",
+    "action": "rebalance_kv_load",
+    "checkpoint_id": "chk-node001-20260704130003"
+  }
+]
