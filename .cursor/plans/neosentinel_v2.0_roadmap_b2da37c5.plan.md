@@ -206,8 +206,8 @@ Joint deliverables before parallel work begins:
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
 | [ ] D2.1 Cluster status panel     | 3-node green/yellow/red cards, requests/min                                                                                  | `dashboard-ui/src/__tests__/ClusterStatus.test.tsx` |
 | [ ] D2.2 Real-time metrics gauges | TTFT P99, tokens/sec, SVE2 %, DRAM BW % per node                                                                             | `dashboard-ui/src/__tests__/MetricsGauges.test.tsx` |
-| [ ] D2.3 WebSocket broadcaster    | [`neosentinel/dashboard/broadcaster.py`](neosentinel/dashboard/broadcaster.py) — reads from mock feed OR Redis (config flag) | `tests/dashboard/test_broadcaster.py`               |
-| [ ] D2.4 WS → React wiring        | Live updates <50ms target (measure in test with mock)                                                                        | `tests/dashboard/test_ws_latency.py`                |
+| [x] D2.3 WebSocket broadcaster    | [`neosentinel/dashboard/broadcaster.py`](neosentinel/dashboard/broadcaster.py) — reads from mock feed OR Redis (config flag) | `tests/dashboard/test_broadcaster.py`               |
+| [x] D2.4 WS → React wiring        | Live updates <50ms target (measure in test with mock)                                                                        | `tests/dashboard/test_ws_latency.py`                |
 | [ ] D2.5 Layout shell             | Full dashboard grid matching spec ASCII mockup                                                                               | Visual snapshot test optional                       |
 
 **Week 2 exit:** Sahil's pipeline fills Redis on a single node; Divyansh's dashboard renders live mock stream; both test suites independent.
