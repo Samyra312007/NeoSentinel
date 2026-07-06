@@ -7,7 +7,7 @@ from typing import Any
 
 import click
 
-from neosentinel.cli.config import init_local_config
+from neosentinel.cli.config import init_local_config, load_local_config
 from neosentinel.cli.diagnostics import run_doctor
 from neosentinel.simulation.player import inject_anomaly, replay_stream, run_simulation
 
@@ -31,32 +31,49 @@ def init() -> None:
 @click.option("--mock-ssh/--live-ssh", default=True, help="Use mock SSH provisioning.")
 def cluster_init(nodes: int, mock_ssh: bool) -> None:
     """Bootstrap services on remote Graviton4 cluster nodes."""
-    from neosentinel.cli.provision import DEFAULT_STEPS, MockSshRunner, node_hosts
+    from neosentinel.cli.provision import LiveSshRunner, MockSshRunner, provision_cluster
 
     if nodes < 1:
         raise click.ClickException("Node count must be at least 1.")
     click.echo(f"Bootstrapping NeoSentinel on {nodes} cluster nodes...")
-    runner = MockSshRunner() if mock_ssh else None
-    ssh = runner or MockSshRunner()
-    hosts = node_hosts(nodes)
-    total_steps = len(hosts) * len(DEFAULT_STEPS)
+    runner = MockSshRunner() if mock_ssh else LiveSshRunner()
     try:
-        with click.progressbar(length=total_steps, label="Provisioning nodes") as bar:
-            for host in hosts:
-                for step in DEFAULT_STEPS:
-                    code, _output = ssh.run(host, step.command)
-                    if code != 0:
-                        raise RuntimeError(f"Provision failed on {host}: {step.label}")
-                    bar.update(1)
+        result = provision_cluster(nodes, runner=runner)
         mode = "mock SSH" if mock_ssh else "live SSH"
-        click.echo(f"[SUCCESS] Cluster bootstrap complete via {mode}.")
+        click.echo(
+            f"[SUCCESS] Cluster bootstrap complete via {mode} "
+            f"({result.steps_completed} steps on {result.nodes} nodes)."
+        )
     except Exception as exc:
         click.echo(f"[ERROR] Cluster bootstrap failed: {exc}", err=True)
         raise click.Abort()
 
 
+@cli.command("run-pipeline")
+@click.option("--node", required=True, help="Node ID for telemetry ingestion.")
+@click.option("--duration", default=0.0, type=float, help="Run for N seconds (0 = forever).")
+def run_pipeline(node: str, duration: float) -> None:
+    """Publish PMU and vLLM telemetry from a node into Redis."""
+    from neosentinel.cli.daemons import run_pipeline_daemon
+
+    click.echo(f"Starting telemetry pipeline for {node}...")
+    run_pipeline_daemon(node, duration_s=duration if duration > 0 else None)
+
+
+@cli.command("run-orchestrator")
+@click.option("--interval", default=0.0, type=float, help="Cycle interval in seconds.")
+def run_orchestrator(interval: float) -> None:
+    """Run the cluster orchestrator decision loop against live Redis."""
+    from neosentinel.cli.daemons import run_orchestrator_daemon
+
+    config = load_local_config()
+    tick = interval if interval > 0 else config.orchestrator_interval_s
+    click.echo(f"Starting orchestrator loop (interval={tick}s)...")
+    run_orchestrator_daemon(interval_s=tick)
+
+
 @cli.command()
-@click.option("--port", default=8080, help="Dashboard server port.")
+@click.option("--port", default=0, type=int, help="Dashboard server port.")
 @click.option(
     "--open-browser/--no-open-browser",
     default=True,
@@ -67,9 +84,16 @@ def cluster_init(nodes: int, mock_ssh: bool) -> None:
     default=False,
     help="Launch the FastAPI dashboard server in the background.",
 )
-def start(port: int, open_browser: bool, serve: bool) -> None:
+@click.option("--live/--mock", default=None, help="Override mock_mode for the dashboard feed.")
+def start(port: int, open_browser: bool, serve: bool, live: bool | None) -> None:
     """Start the NeoSentinel control plane dashboard server."""
-    url = f"http://localhost:{port}"
+    import os
+
+    config = load_local_config()
+    resolved_port = port if port > 0 else config.dashboard_port
+    if live is not None:
+        os.environ["NEOSENTINEL_MOCK_MODE"] = "0" if live else "1"
+    url = f"http://localhost:{resolved_port}"
     if serve:
         subprocess.Popen(
             [
@@ -80,7 +104,7 @@ def start(port: int, open_browser: bool, serve: bool) -> None:
                 "--host",
                 "0.0.0.0",
                 "--port",
-                str(port),
+                str(resolved_port),
             ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,

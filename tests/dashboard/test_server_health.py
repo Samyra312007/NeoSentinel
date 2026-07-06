@@ -7,7 +7,10 @@ def test_health_check():
     client = TestClient(app)
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy", "service": "dashboard"}
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["service"] == "dashboard"
+    assert "mode" in body
 
 
 def test_websocket_endpoint():

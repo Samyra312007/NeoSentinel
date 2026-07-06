@@ -26,7 +26,8 @@ function PanelHeader({ id, title, meta }: { id: string; title: string; meta: str
 
 function App() {
   const { theme, toggleTheme } = useTheme();
-  const { connected, error, messages } = useWebSocket('ws://localhost:8080/ws');
+  const wsUrl = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`;
+  const { connected, error, messages } = useWebSocket(wsUrl);
 
   // Live clock + fresh relative timestamps, ticking once a second.
   const [now, setNow] = useState<number>(() => Date.now());

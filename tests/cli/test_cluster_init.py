@@ -16,7 +16,7 @@ def test_cluster_init_command_mock_ssh() -> None:
     result = runner.invoke(cli, ["cluster-init", "--nodes", "3", "--mock-ssh"])
     assert result.exit_code == 0
     assert "Bootstrapping NeoSentinel on 3 cluster nodes" in result.output
-    assert "[SUCCESS] Cluster bootstrap complete via mock SSH." in result.output
+    assert "[SUCCESS] Cluster bootstrap complete via mock SSH" in result.output
 
 
 def test_cluster_init_rejects_zero_nodes() -> None:

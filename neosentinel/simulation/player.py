@@ -143,7 +143,20 @@ def inject_anomaly(
         target_node = node_id
         description = anomaly_type
 
-    mode = "mock" if mock else "live"
+    if not mock:
+        from neosentinel.cli.daemons import inject_live_anomaly
+
+        live = inject_live_anomaly(target_node, anomaly_type)
+        return {
+            **live,
+            "message": (
+                f"Synthetic anomaly '{anomaly_type}' injected on '{target_node}' "
+                "via live adapter (Redis telemetry seeded)."
+            ),
+            "description": description if scenario else None,
+        }
+
+    mode = "mock"
     return {
         "status": "injected",
         "node_id": target_node,

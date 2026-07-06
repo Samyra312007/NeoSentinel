@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import os
 import shutil
 import socket
+import subprocess
 from dataclasses import dataclass
 from typing import Callable
+from urllib.error import URLError
+from urllib.request import urlopen
+
+from neosentinel.cli.config import load_local_config
 
 
 @dataclass(frozen=True)
@@ -18,38 +24,131 @@ CheckRunner = Callable[[], DiagnosticCheck]
 
 def _check_ssh() -> DiagnosticCheck:
     key = shutil.which("ssh")
+    hosts = load_local_config().node_hosts
+    if key is None:
+        return DiagnosticCheck(
+            name="SSH Connectivity & PEM Key Permissions",
+            passed=False,
+            detail="ssh client not found on PATH",
+        )
+    identity = os.path.expanduser("~/.ssh/neosentinel-graviton")
+    if not os.path.isfile(identity):
+        return DiagnosticCheck(
+            name="SSH Connectivity & PEM Key Permissions",
+            passed=True,
+            detail="ssh client available (cluster key optional for local dev)",
+        )
+    failures: list[str] = []
+    for host in hosts:
+        result = subprocess.run(
+            [
+                "ssh",
+                "-o",
+                "BatchMode=yes",
+                "-o",
+                "ConnectTimeout=5",
+                "-i",
+                identity,
+                f"ubuntu@{host}",
+                "echo ok",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append(host)
+    if failures:
+        return DiagnosticCheck(
+            name="SSH Connectivity & PEM Key Permissions",
+            passed=False,
+            detail=f"SSH failed for: {', '.join(failures)}",
+        )
     return DiagnosticCheck(
         name="SSH Connectivity & PEM Key Permissions",
-        passed=key is not None,
-        detail="ssh client available" if key else "ssh client not found on PATH",
+        passed=True,
+        detail=f"SSH reachable for {len(hosts)} node(s)",
     )
 
 
 def _check_performix() -> DiagnosticCheck:
     apx = shutil.which("apx")
+    if apx:
+        return DiagnosticCheck(
+            name="Performix PMU SVE2 Hardware Counters",
+            passed=True,
+            detail="apx binary found on PATH",
+        )
+    hosts = load_local_config().node_hosts
+    identity = os.path.expanduser("~/.ssh/neosentinel-graviton")
+    if os.path.isfile(identity):
+        host = hosts[0]
+        result = subprocess.run(
+            [
+                "ssh",
+                "-o",
+                "BatchMode=yes",
+                "-o",
+                "ConnectTimeout=5",
+                "-i",
+                identity,
+                f"ubuntu@{host}",
+                "apx --version",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0:
+            return DiagnosticCheck(
+                name="Performix PMU SVE2 Hardware Counters",
+                passed=True,
+                detail=f"apx available on remote host {host}",
+            )
     return DiagnosticCheck(
         name="Performix PMU SVE2 Hardware Counters",
-        passed=apx is not None,
-        detail="apx binary found" if apx else "apx not installed (mock mode OK for dev)",
+        passed=False,
+        detail="apx not installed locally or on node-001 (MockPerformix fallback available)",
     )
 
 
 def _check_vllm() -> DiagnosticCheck:
+    config = load_local_config()
+    url = f"{config.vllm_base_url.rstrip('/')}/health"
+    try:
+        with urlopen(url, timeout=2) as response:
+            passed = response.status == 200
+            detail = f"vLLM health OK at {url}" if passed else f"vLLM returned {response.status}"
+    except (URLError, OSError, TimeoutError):
+        passed = False
+        detail = f"vLLM not reachable at {url}"
     return DiagnosticCheck(
         name="vLLM Worker Engines & CUDA/SVE2 Kernels",
-        passed=True,
-        detail="vLLM worker templates configured in docker/vllm",
+        passed=passed,
+        detail=detail,
     )
 
 
 def _check_redis() -> DiagnosticCheck:
+    config = load_local_config()
+    host = os.environ.get("NEOSENTINEL_REDIS_HOST")
+    port = int(os.environ.get("NEOSENTINEL_REDIS_PORT", "6379"))
+    if config.redis_url.startswith("redis://"):
+        without_scheme = config.redis_url.removeprefix("redis://")
+        if ":" in without_scheme:
+            host_part, port_part = without_scheme.rsplit(":", 1)
+            host = host or host_part.split("@")[-1]
+            port = int(port_part.split("/")[0])
+        else:
+            host = host or without_scheme
+    host = host or "127.0.0.1"
     try:
-        with socket.create_connection(("127.0.0.1", 6379), timeout=1.0):
+        with socket.create_connection((host, port), timeout=2.0):
             passed = True
-            detail = "Redis reachable on localhost:6379"
+            detail = f"Redis reachable at {host}:{port}"
     except OSError:
         passed = False
-        detail = "Redis not reachable on localhost:6379 (mock feed OK for offline demo)"
+        detail = f"Redis not reachable at {host}:{port}"
     return DiagnosticCheck(
         name="Redis Streams Telemetry Pipeline",
         passed=passed,
@@ -58,21 +157,33 @@ def _check_redis() -> DiagnosticCheck:
 
 
 def _check_ray() -> DiagnosticCheck:
+    try:
+        with socket.create_connection(("127.0.0.1", 8265), timeout=1.0):
+            passed = True
+            detail = "Ray dashboard reachable on localhost:8265"
+    except OSError:
+        passed = False
+        detail = "Ray not running on localhost:8265 (start docker compose on node-001)"
     return DiagnosticCheck(
         name="Ray Distributed Task Scheduler",
-        passed=True,
-        detail="Ray cluster template present in docker/ray",
+        passed=passed,
+        detail=detail,
     )
 
 
 def _check_traefik() -> DiagnosticCheck:
     try:
-        with socket.create_connection(("127.0.0.1", 8081), timeout=1.0):
-            passed = True
-            detail = "Traefik ping port reachable on localhost:8081"
-    except OSError:
-        passed = False
-        detail = "Traefik not running (start docker compose for live ingress)"
+        with urlopen("http://127.0.0.1/health", timeout=2) as response:
+            passed = response.status == 200
+            detail = "Traefik ingress healthy on localhost:80" if passed else "Traefik unhealthy"
+    except (URLError, OSError, TimeoutError):
+        try:
+            with socket.create_connection(("127.0.0.1", 8081), timeout=1.0):
+                passed = True
+                detail = "Traefik ping port reachable on localhost:8081"
+        except OSError:
+            passed = False
+            detail = "Traefik not running (start docker compose on node-001)"
     return DiagnosticCheck(
         name="Traefik Ingress Controller",
         passed=passed,
@@ -81,10 +192,21 @@ def _check_traefik() -> DiagnosticCheck:
 
 
 def _check_agent() -> DiagnosticCheck:
+    try:
+        from neosentinel.agent.brain import AgentBrain
+        from neosentinel.orchestrator.cluster import ClusterSentinelOrchestrator
+
+        _ = AgentBrain
+        _ = ClusterSentinelOrchestrator
+        passed = True
+        detail = "Agent brain and orchestrator modules importable"
+    except ImportError as exc:
+        passed = False
+        detail = f"Agent modules failed to import: {exc}"
     return DiagnosticCheck(
         name="Llama-3.2 Autonomous Agent Reasoning Loop",
-        passed=True,
-        detail="Agent brain and decision loop modules importable",
+        passed=passed,
+        detail=detail,
     )
 
 

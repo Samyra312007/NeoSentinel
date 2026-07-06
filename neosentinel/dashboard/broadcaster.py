@@ -4,37 +4,45 @@ from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect
 
+from neosentinel.contracts.streams import (
+    STREAM_DECISIONS,
+    STREAM_HEALING,
+    STREAM_PMU,
+    STREAM_VLLM,
+)
 from neosentinel.dashboard.mock_feed import MockTelemetryFeed
+from neosentinel.dashboard.redis_adapter import RedisStreamAdapter
 
 logger = logging.getLogger(__name__)
 
 
 class TelemetryBroadcaster:
-    """Manages active WebSocket clients and broadcasts live telemetry from Mock feed or Redis."""
-
-    def __init__(self, use_redis: bool = False, redis_url: str = "redis://localhost:6379") -> None:
+    def __init__(
+        self,
+        use_redis: bool = False,
+        redis_url: str = "redis://localhost:6379",
+        *,
+        redis_cluster: bool = False,
+        cluster_id: str = "cluster-graviton4",
+    ) -> None:
         self.use_redis = use_redis
         self.redis_url = redis_url
+        self.redis_cluster = redis_cluster
+        self.cluster_id = cluster_id
         self.active_connections: set[WebSocket] = set()
         self._stream_task: asyncio.Task[None] | None = None
         self._running = False
 
     async def connect(self, websocket: WebSocket) -> None:
-        """Accept a new WebSocket connection and track it."""
         await websocket.accept()
         self.active_connections.add(websocket)
-        logger.debug(f"Client connected. Active clients: {len(self.active_connections)}")
+        logger.debug("Client connected. Active clients: %d", len(self.active_connections))
 
     def disconnect(self, websocket: WebSocket) -> None:
-        """Remove a disconnected client from tracking."""
         self.active_connections.discard(websocket)
-        logger.debug(f"Client disconnected. Active clients: {len(self.active_connections)}")
+        logger.debug("Client disconnected. Active clients: %d", len(self.active_connections))
 
     async def broadcast(self, message: dict[str, Any] | str) -> int:
-        """Broadcast an event to all connected clients concurrently.
-
-        Returns the number of clients successfully reached.
-        """
         if not self.active_connections:
             return 0
 
@@ -49,7 +57,7 @@ class TelemetryBroadcaster:
                     await connection.send_json(message)
                 successful += 1
             except (WebSocketDisconnect, RuntimeError, Exception) as err:
-                logger.debug(f"Failed to send to client, removing: {err}")
+                logger.debug("Failed to send to client, removing: %s", err)
                 to_remove.add(connection)
 
         for connection in to_remove:
@@ -58,7 +66,6 @@ class TelemetryBroadcaster:
         return successful
 
     async def _stream_from_mock(self, scenario_name: str, delay_sec: float) -> None:
-        """Stream simulated events from disk JSON fixtures."""
         feed = MockTelemetryFeed()
         await asyncio.sleep(0.5)
         while self._running:
@@ -69,43 +76,53 @@ class TelemetryBroadcaster:
             await asyncio.sleep(delay_sec)
 
     async def _stream_from_redis(self) -> None:
-        """Stream telemetry events from Redis XREAD (Sahil's streams)."""
         try:
-            import redis.asyncio as redis  # type: ignore[import-untyped, import-not-found]
+            import redis.asyncio as aioredis
         except ImportError as err:
             raise RuntimeError("Redis module is not installed for use_redis=True mode.") from err
 
+        adapter = RedisStreamAdapter(cluster_id=self.cluster_id)
+        client = aioredis.from_url(self.redis_url, decode_responses=True)
         try:
-            client = redis.from_url(self.redis_url)
-            try:
-                streams = {
-                    "neosentinel:telemetry:pmu": "$",
-                    "neosentinel:telemetry:vllm": "$",
-                    "neosentinel:telemetry:decisions": "$",
-                    "neosentinel:telemetry:healing": "$",
-                }
-                while self._running:
-                    response = await client.xread(streams, count=10, block=100)
-                    if response:
-                        for _stream_name, messages in response:
-                            for _msg_id, fields in messages:
-                                event_data = {
-                                    k.decode("utf-8") if isinstance(k, bytes) else k: (
-                                        v.decode("utf-8") if isinstance(v, bytes) else v
-                                    )
-                                    for k, v in fields.items()
-                                }
-                                await self.broadcast(event_data)
-                    await asyncio.sleep(0.01)
-            finally:
-                await client.aclose()
+            streams = {
+                STREAM_PMU: "$",
+                STREAM_VLLM: "$",
+                STREAM_DECISIONS: "$",
+                STREAM_HEALING: "$",
+            }
+            while self._running:
+                response = await client.xread(streams, count=10, block=1000)
+                if response:
+                    for stream_name, messages in response:
+                        name = (
+                            stream_name.decode("utf-8")
+                            if isinstance(stream_name, bytes)
+                            else stream_name
+                        )
+                        for msg_id, fields in messages:
+                            stream_id = (
+                                msg_id.decode("utf-8") if isinstance(msg_id, bytes) else msg_id
+                            )
+                            streams[name] = stream_id
+                            normalized = {
+                                (
+                                    k.decode("utf-8") if isinstance(k, bytes) else k
+                                ): (
+                                    v.decode("utf-8") if isinstance(v, bytes) else v
+                                )
+                                for k, v in fields.items()
+                            }
+                            for event in adapter.ingest(name, normalized):
+                                await self.broadcast(event)
+                await asyncio.sleep(0.01)
         except Exception as err:
             raise RuntimeError(f"Failed to connect to Redis or read stream: {err}") from err
+        finally:
+            await client.aclose()
 
     async def start_streaming(
         self, scenario_name: str = "sve2_underutilization", delay_sec: float = 1.0
     ) -> None:
-        """Start the background broadcasting loop."""
         if self._running:
             return
         self._running = True
@@ -118,7 +135,6 @@ class TelemetryBroadcaster:
             )
 
     async def stop_streaming(self) -> None:
-        """Stop the background broadcasting loop and disconnect clients."""
         self._running = False
         if self._stream_task and not self._stream_task.done():
             self._stream_task.cancel()
