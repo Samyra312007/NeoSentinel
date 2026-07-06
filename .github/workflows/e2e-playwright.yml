@@ -39,7 +39,7 @@ jobs:
         run: |
           uvicorn neosentinel.dashboard.server:app --host 127.0.0.1 --port 8080 &
           sleep 3
-          curl --retry 5 --retry-delay 2 --retry-connrefused -f http://127.0.0.1:8080/health | grep healthy
+          curl --retry 5 --retry-delay 2 --retry-connrefused -f http://127.0.0.1:8080/health | grep '"status":"ok"'
 
       - name: Start Vite Preview Server
         run: |
